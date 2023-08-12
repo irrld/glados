@@ -1,6 +1,10 @@
 #include <video.h>
 
-void kernel_main() {
+void KernelMain() {
   ClearConsole();
-  Print("Hello World!");
+  SetColor(FOREGROUND_LIGHT_BLUE | BACKGROUND_BLACK);
+  PrintLn("Hello World!");
+  PrintLn("BRUH!");
+  DisableCursor();
+  EnableCursor();
 }
