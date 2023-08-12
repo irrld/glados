@@ -48,6 +48,7 @@ struct CursorPos {
   uint8_t y;
 };
 
+void InitializeVideo();
 void DisableCursor();
 void EnableCursor();
 void ClearConsole();

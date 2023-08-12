@@ -1,43 +1,34 @@
-gdt_start:
-
-gdt_null:
-    dd 0x0 ; dd means double word (4 bytes)
-    dd 0x0
-
-gdt_code:
-    ; base=0x0, limit=0xfffff,
-    ; 1st flags: (present)1 (privilege)00 (descriptor type)1 -> 1001b
-    ; type flags: (code)1 (conforming)0 (readable)1 (accessed)0 -> 1010b
-    ; 2nd flags:
-    dw 0xffff       ; Limit (bits 0-15)
-    dw 0x0          ; Base (bits 0-15)
-    db 0x0          ; Base (bits 16-23)
-    db 10011010b    ; 1st flags, type flags
-    db 11001111b    ; 2d flags, Limit (bits 16-19)
-    db 0x0          ; Base (24-31)
-
-gdt_data:
-    ; Same as code segment except for the type flags:
-    ; type flags: (code)0 (expand down)0 (writable)1 (accessed)0 -> 0010b
-    dw 0xffff       ; Limit (bits 0-15)
-    dw 0x0          ; Base (bits 0-15)
-    db 0x0          ; Base (bits 16-23)
-    db 10010010b    ; 1st flags, type flags
-    db 11001111b    ; 2d flags, Limit (bits 16-19)
-    db 0x0          ; Base (24-31)
-
-gdt_end:
-
-gdt_descriptor:
-    dw gdt_end - gdt_start - 1
-    dd gdt_start
-
-
-; Define some handy constants for the GDT segment descriptor offsets, which
-; are what segment registers must contain when in protected mode. For example,
-; when we set DS = 0x10 in PM, the CPU knows that we mean it to use the
-; segment described at offset 0x10 (i.e. 16 bytes) in our GDT, which in our
-; case is the DATA segment (0x0 -> NULL; 0x08 -> CODE; 0x10 -> DATA)
-CODE_SEG equ gdt_code - gdt_start
-DATA_SEG equ gdt_data - gdt_start
-
+; Access bits
+PRESENT        equ 1 << 7
+NOT_SYS        equ 1 << 4
+EXEC           equ 1 << 3
+DC             equ 1 << 2
+RW             equ 1 << 1
+ACCESSED       equ 1 << 0
+ 
+; Flags bits
+GRAN_4K       equ 1 << 7
+SZ_32         equ 1 << 6
+LONG_MODE     equ 1 << 5
+ 
+GDT:
+    .Null: equ $ - GDT
+        dq 0
+    .Code: equ $ - GDT
+        dd 0xFFFF                                   ; Limit & Base (low, bits 0-15)
+        db 0                                        ; Base (mid, bits 16-23)
+        db PRESENT | NOT_SYS | EXEC | RW            ; Access
+        db GRAN_4K | LONG_MODE | 0xF                ; Flags & Limit (high, bits 16-19)
+        db 0                                        ; Base (high, bits 24-31)
+    .Data: equ $ - GDT
+        dd 0xFFFF                                   ; Limit & Base (low, bits 0-15)
+        db 0                                        ; Base (mid, bits 16-23)
+        db PRESENT | NOT_SYS | RW                   ; Access
+        db GRAN_4K | SZ_32 | 0xF                    ; Flags & Limit (high, bits 16-19)
+        db 0                                        ; Base (high, bits 24-31)
+    .TSS: equ $ - GDT
+        dd 0x00000068
+        dd 0x00CF8900
+    .Pointer:
+        dw $ - GDT - 1
+        dq GDT

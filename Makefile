@@ -10,10 +10,10 @@ clean:
 
 # Run bochs to simulate booting of our code.
 run: all os-image
-	qemu-system-i386 -drive format=raw,file=build/image.img
+	qemu-system-x86_64 -drive format=raw,file=build/image.img
 
 debug: all os-image
-	qemu-system-i386 -s -S -drive format=raw,file=build/image.img
+	qemu-system-x86_64 -s -S -drive format=raw,file=build/image.img
 
 # This is the actual disk image that the computer loads,
 # which is the combination of our compiled bootloader and kernel os-image: boot_sect.bin kernel.bin

@@ -5,14 +5,31 @@ struct VideoData {
   char character_;
   char color_;
 };
-struct VideoData* video_memory_ = VIDEO_ADDRESS;
 
-int cursor_pos_ = 0;
-bool cursor_enabled_ = true;
-uint8_t color_ = FOREGROUND_WHITE | BACKGROUND_BLACK;
+volatile int cursor_pos_;
+volatile bool cursor_enabled_;
+volatile uint8_t color_;
+
+void InitializeVideo() {
+  cursor_enabled_ = true;
+  cursor_pos_ = 0;
+  color_ = FOREGROUND_WHITE | BACKGROUND_BLACK;
+  ClearConsole();
+  DisableCursor();
+}
+
+struct VideoData* GetVideoDataFromIndex(int index) {
+  void* ptr = VIDEO_ADDRESS + (index * sizeof(struct VideoData));
+  return (struct VideoData*) ptr;
+}
+
+struct VideoData* GetVideoData(uint8_t col, uint8_t row) {
+  int index = (row * MAX_COLS) + col;
+  return GetVideoDataFromIndex(index);
+}
 
 // todo move this somewhere else
-void MemoryCopy(char* source, char* dest, int bytes) {
+void MemoryCopy(void* source, void* dest, int bytes) {
   for (int i = 0; i < bytes; i++) {
     char* dest_ptr = dest + i;
     char* source_ptr = source + i;
@@ -32,16 +49,16 @@ void HandleScroll() {
   }
   /* Shuffle the rows back one. */
   for (int row = 1; row < MAX_ROWS; row++) {
-    MemoryCopy(VIDEO_ADDRESS + GetScreenOffset(0, row),
-               VIDEO_ADDRESS + GetScreenOffset(0, row - 1),
+    MemoryCopy(GetVideoData(0, row),
+               GetVideoData(0, row - 1),
                MAX_COLS * 2
     );
   }
   /* Blank the last line by setting all bytes to 0 */
-  int offset = GetScreenOffset(0, MAX_ROWS - 1);
-  char* last_line = VIDEO_ADDRESS + offset;
-  for (int i = 0; i < MAX_COLS * 2; i++) {
-    last_line[i] = 0;
+  for (int i = 0; i < MAX_COLS; i++) {
+    struct VideoData* data = GetVideoData(i, MAX_ROWS - 1);
+    data->character_ = 0x0;
+    data->color_ = FOREGROUND_WHITE | BACKGROUND_BLACK;
   }
 
   cursor_pos_ -= MAX_COLS;
@@ -51,10 +68,10 @@ void UpdateCursorPosition() {
   if (!cursor_enabled_) {
     return;
   }
-  port_byte_out(REG_SCREEN_CTRL, 0x0A);
-  port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xC0) | cursor_pos_);
-  port_byte_out(REG_SCREEN_CTRL, 0x0B);
-  port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xE0) | cursor_pos_);
+  port_byte_out(REG_SCREEN_CTRL, 0x0F);
+  port_byte_out(REG_SCREEN_DATA, (uint8_t) (cursor_pos_ + MAX_COLS & 0xFF));
+  port_byte_out(REG_SCREEN_CTRL, 0x0E);
+  port_byte_out(REG_SCREEN_DATA, (uint8_t) ((cursor_pos_ + MAX_COLS >> 8) & 0xFF));
 }
 
 void DisableCursor() {
@@ -70,15 +87,17 @@ void EnableCursor() {
   if (cursor_enabled_) {
     return;
   }
+  cursor_enabled_ = true;
   port_byte_out(REG_SCREEN_CTRL, 0x0A);
-  port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xC0) | cursor_pos_);
+  port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xC0) | 0);
   port_byte_out(REG_SCREEN_CTRL, 0x0B);
-  port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xE0) | cursor_pos_);
+  port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xE0) | 1);
+  UpdateCursorPosition();
 }
 
 void ClearConsole() {
   for (int i = 0; i < MAX_COLS * MAX_ROWS; i++) {
-    struct VideoData* data = &video_memory_[i];
+    struct VideoData* data = GetVideoDataFromIndex(i);
     data->character_ = 0x0;
     data->color_ = FOREGROUND_WHITE | BACKGROUND_BLACK;
   }
@@ -116,13 +135,13 @@ void Print(const char* str) {
       HandleScroll();
       continue;
     }
-    struct VideoData* data = &video_memory_[cursor_pos_];
+    struct VideoData* data = GetVideoDataFromIndex(cursor_pos_);
     data->character_ = str[i];
     data->color_ = color_;
     i++;
     cursor_pos_++;
-    UpdateCursorPosition();
   }
+  UpdateCursorPosition();
   HandleScroll();
 }
 

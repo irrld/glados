@@ -1,5 +1,4 @@
-; Ensures that we jump straight into the kernel’s entry function.
-[bits 32]     ; We’re in protected mode by now, so use 32-bit instructions.
+[bits 64]
 [extern KernelMain]
-    call KernelMain ; invoke KernelMain() in our C kernel
+    call KernelMain
     jmp $ ; Hang forever when we return from the kernel
