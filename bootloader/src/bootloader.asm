@@ -1,59 +1,67 @@
-;
-;
-;
 
-[org 0x7c00] ; This tells assembler where we're going to be in memory
-KERNEL_OFFSET equ 0x8000
+    section .boot_sector
+    global __start
 
-    mov [BOOT_DRIVE], dl
+    [bits 16]
 
-    mov bp, 0x8000 ; set our stack, somewhere safe
-    mov sp, bp
-
-    mov bx, MSG_REAL_MODE
+__start:
+    mov bx, hello_msg
     call print_string
 
-    call load_kernel
+    mov si, disk_address_packet
+    mov ah, 0x42 ; BIOS "extended read" function
+    mov dl, 0x80 ; Drive number
+    int 0x13 ; BIOS disk services
+    jc error_reading_disk
 
-    call switch_to_pm
+ignore_disk_read_error:
+    SND_STAGE_ADDR equ (BOOT_LOAD_ADDR + SECTOR_SIZE)
+    jmp 0:SND_STAGE_ADDR
 
-    jmp $
+error_reading_disk:
+    ;; We accept reading fewer sectors than requested
+    cmp word [dap_sectors_num], READ_SECTORS_NUM
+    jle ignore_disk_read_error
 
-
-%include "print.asm"
-%include "disk/disk_load.asm"
-%include "pm/gdt.asm"
-%include "pm/switch_to_pm.asm"
-
-[bits 16]
-
-load_kernel:
-    mov bx, MSG_LOAD_KERNEL
+    mov bx, error_reading_disk_msg
     call print_string
 
-    mov bx, KERNEL_OFFSET
-    mov dh , 15             ; load 5 sectors from disk
-    mov dl, [BOOT_DRIVE]
-    call disk_load
+end:
+    hlt
+    jmp end
 
-    mov bx, MSG_LOADED_KERNEL
-    call print_string
+;; Uses the BIOS to print a null-termianted string. The address of the
+;; string is found in the bx register.
+print_string:
+    pusha
+    mov ah, 0x0e ; BIOS "display character" function
+
+print_string_loop:
+    cmp byte [bx], 0
+    je print_string_return
+
+    mov al, [bx]
+    int 0x10 ; BIOS video services
+
+    inc bx
+    jmp print_string_loop
+
+print_string_return:
+    popa
     ret
 
-[bits 64]
+    align 4
+disk_address_packet:
+    db 0x10 ; Size of packet
+    db 0 ; Reserved, always 0
+dap_sectors_num:
+    dw READ_SECTORS_NUM ; Number of sectors read
+    dd (BOOT_LOAD_ADDR + SECTOR_SIZE) ; Destination address
+    dq 1 ; Sector to start at (0 is the boot sector)
 
-begin_pm:
+READ_SECTORS_NUM equ 64
+BOOT_LOAD_ADDR equ 0x7c00
+SECTOR_SIZE equ 512
 
-    call KERNEL_OFFSET
-    jmp $
-
-; Global variables
-BOOT_DRIVE: db 0
-MSG_REAL_MODE db "16BIT LOADED", 0x0D, 0x0A, 0
-MSG_LOAD_KERNEL db "LOADING KERNEL", 0x0D, 0x0A, 0
-MSG_LOADED_KERNEL db "DONE", 0x0D, 0x0A, 0
-
-; Boot sector magic
-times 510-($-$$) db 0
-
-dw 0xaa55
+hello_msg: db "Hello, world!", 13, 10, 0
+error_reading_disk_msg: db "Error: failed to read disk with 0x13/ah=0x42", 13, 10, 0

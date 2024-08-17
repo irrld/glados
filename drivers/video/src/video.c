@@ -19,7 +19,7 @@ void InitializeVideo() {
 }
 
 struct VideoData* GetVideoDataFromIndex(int index) {
-  void* ptr = VIDEO_ADDRESS + (index * sizeof(struct VideoData));
+  void* ptr = (void*) (VIDEO_ADDRESS + (index * sizeof(struct VideoData)));
   return (struct VideoData*) ptr;
 }
 

@@ -9,10 +9,13 @@ clean:
 	+$(MAKE) clean -C kernel
 
 # Run bochs to simulate booting of our code.
-run: all os-image
+run: os-image
 	qemu-system-x86_64 -drive format=raw,file=build/image.img
 
-debug: all os-image
+debug: os-image
+	qemu-system-x86_64 -s -S -drive format=raw,file=build/image.img
+
+only-debug:
 	qemu-system-x86_64 -s -S -drive format=raw,file=build/image.img
 
 # This is the actual disk image that the computer loads,
@@ -21,6 +24,7 @@ os-image: all
 	mkdir -p build
 	qemu-img create build/image.img 1G
 	dd if=/dev/zero of=build/image.img bs=1M count=128
-	dd if=bootloader/build/bootloader.bin of=build/image.img bs=512 seek=0 count=1 conv=notrunc
-	dd if=kernel/build/kernel.bin of=build/image.img bs=512 seek=1 count=16 conv=notrunc
+	dd if=kernel/build/kernel.bin of=build/image.img bs=512 seek=0 count=25 conv=notrunc
+	#dd if=bootloader/build/bootloader.bin of=build/image.img bs=512 seek=0 count=1 conv=notrunc
+	#dd if=kernel/build/kernel.bin of=build/image.img bs=512 seek=1 count=16 conv=notrunc
 
