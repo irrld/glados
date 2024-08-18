@@ -1,5 +1,5 @@
 BUILD_DIR := build
-KERNEL_EXT := $(BUILD_DIR)/video.o
+KERNEL_EXT := $(BUILD_DIR)/video.o $(BUILD_DIR)/keyboard.o
 BOOTLOADER := $(BUILD_DIR)/bootloader.elf
 KERNEL := $(BUILD_DIR)/kernel.elf
 

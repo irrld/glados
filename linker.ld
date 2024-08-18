@@ -17,12 +17,24 @@ SECTIONS
         BYTE(0xaa)
     } > boot_sector
     .stage2 : { *(.stage2); } > stage2
+
     .text : { *(.text); } > kernel
     .data : { *(.data); } > kernel
     .rodata : { *(.rodata); } > kernel
+
     .bss :
     {
         *(.bss)
         *(COMMON)
     } > kernel
+
+    .stack (NOLOAD) :
+    {
+        . = ALIGN(16);
+        __stack_start = .;
+        . = . + 0x8000;  /* Reserve 32KB for stack */
+        __stack_end = .;
+    } > kernel
+
+    /DISCARD/ : { *(.comment) }
 }

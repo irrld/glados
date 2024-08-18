@@ -7,4 +7,4 @@ all: boot_sector.o stage2.o
 
 %.o: src/%.asm
 	@mkdir -p $(BUILD_DIR)
-	nasm -f elf64 $< -o $(BUILD_DIR)/$@
+	nasm -gdwarf -f elf64 $< -o $(BUILD_DIR)/$@

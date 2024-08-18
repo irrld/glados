@@ -1,6 +1,6 @@
 #include "video.h"
-#include "low_level.h"
-#include <memcpy.h>
+#include "kernel.h"
+#include "string.h"
 
 struct video_data {
   char character_;

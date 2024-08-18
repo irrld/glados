@@ -124,6 +124,9 @@ start_long_mode:
     mov ebx, long_mode_msg
     call print_string64
 
+    extern __stack_end
+    mov rsp, __stack_end
+
     extern _start_kernel
     call _start_kernel
 

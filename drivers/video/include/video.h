@@ -1,6 +1,12 @@
-#pragma once
-#include <stdint.h>
-#include <stdbool.h>
+//
+// Created by irrl on 8/12/23.
+//
+
+#ifndef TANTALUM_VIDEO_H
+#define TANTALUM_VIDEO_H
+
+#include "stdint.h"
+#include "stdbool.h"
 
 #define VIDEO_ADDRESS 0xb8000
 #define MAX_ROWS 25
@@ -57,3 +63,5 @@ struct cursor_pos get_cursor_pos();
 void set_color(uint8_t color);
 void print(const char* str);
 void println(const char* str);
+
+#endif  //TANTALUM_VIDEO_H

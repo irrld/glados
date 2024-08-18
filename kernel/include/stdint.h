@@ -1,4 +1,11 @@
-#pragma once
+//
+// Created by irrl on 8/12/23.
+//
+
+#ifndef TANTALUM_INT_H
+#define TANTALUM_INT_H
+
+#define NULL 0
 
 typedef unsigned char       uint8_t;
 typedef   signed char        int8_t;
@@ -34,3 +41,5 @@ typedef uint64_t      uint_fast64_t;
 
 typedef  int64_t           intmax_t;
 typedef uint64_t          uintmax_t;
+
+#endif  //TANTALUM_INT_H
