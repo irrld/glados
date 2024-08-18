@@ -1,10 +1,10 @@
-INCLUDE_DIRS = include
+INCLUDE_DIRS = ./include/
+BUILD_DIR := ../build
 
-all: clean bootloader.o
 
-bootloader.o : src/bootloader.asm src/stage2.asm
-	mkdir -p build
-	nasm $< $(addprefix -I, ${INCLUDE_DIRS}) -o build/bootloader.o
+all: boot_sector.o stage2.o
+	ld -i -o elf64 $(addprefix $(BUILD_DIR)/, $^) -o $(BUILD_DIR)/bootloader.elf
 
-clean:
-	rm -rf build
+%.o: src/%.asm
+	@mkdir -p $(BUILD_DIR)
+	nasm -f elf64 $< -o $(BUILD_DIR)/$@

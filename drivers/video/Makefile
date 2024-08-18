@@ -1,10 +1,11 @@
-INCLUDE_DIRS = include ../../kernel/include
+INCLUDE_DIRS = ./include/ ../../kernel/include/
 
-all: clean video.o
+CFLAGS := -std=c99 -ffreestanding -m64 -mno-red-zone -fno-builtin -nostdinc -Wall -Wextra
 
-%.o : src/%.c
-	mkdir -p build
-	clang -O0 --target=x86_64-unknown-linux-gnu -g -fno-pie -ffreestanding -c $< $(addprefix -I, ${INCLUDE_DIRS}) -o build/$@
+BUILD_DIR := ../../build
 
-clean:
-	rm -rf build
+all: $(BUILD_DIR)/video.o
+
+$(BUILD_DIR)/%.o : src/%.c
+	mkdir -p $(BUILD_DIR)
+	gcc $(CFLAGS) -c $< $(addprefix -I, ${INCLUDE_DIRS}) -o $@

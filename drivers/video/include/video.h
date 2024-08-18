@@ -43,17 +43,17 @@
 #define REG_SCREEN_CTRL 0x3D4
 #define REG_SCREEN_DATA 0x3D5
 
-struct CursorPos {
+struct cursor_pos {
   uint8_t x;
   uint8_t y;
 };
 
-void InitializeVideo();
-void DisableCursor();
-void EnableCursor();
-void ClearConsole();
-void SetCursorPos(uint8_t row, uint8_t col);
-struct CursorPos GetCursorPos();
-void SetColor(uint8_t color);
-void Print(const char* str);
-void PrintLn(const char* str);
+void driver_init_video();
+void disable_cursor();
+void enable_cursor();
+void clear_console();
+void set_cursor_pos(uint8_t row, uint8_t col);
+struct cursor_pos get_cursor_pos();
+void set_color(uint8_t color);
+void print(const char* str);
+void println(const char* str);

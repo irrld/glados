@@ -1,27 +1,17 @@
-INCLUDE_DIRS = ../drivers/video/include include
+INCLUDE_DIRS = ../drivers/video/include ./include/
 
 CFLAGS := -std=c99 -ffreestanding -m64 -mno-red-zone -fno-builtin -nostdinc -Wall -Wextra
-LDFLAGS := -T linker.ld
+BUILD_DIR := ../build
 
-all : clean kernel.bin
-	objcopy --target=elf64-x86-64 --extract-symbol build/kernel.elf build/kernel.elf.sym
-	objcopy --target=elf64-x86-64 -O binary --strip-debug build/kernel.elf build/kernel.bin
+SRC_DIR := src
 
-kernel.bin: kernel.o bootloader.o
-	ld $(LDFLAGS) $(addprefix build/, $^) -o build/kernel.elf
+all : kernel.elf
+	objcopy --target=elf64-x86-64 --extract-symbol $(BUILD_DIR)/kernel.elf $(BUILD_DIR)/kernel.elf.sym
 
-video.o : ../drivers/build/video.o
-	mkdir -p build
-	cp ../drivers/build/video.o build/video.o
+kernel.elf: $(BUILD_DIR)/kernel.o $(BUILD_DIR)/low_level.o $(BUILD_DIR)/memcpy.o
+	ld -i -o elf64 $^ -o $(BUILD_DIR)/kernel.elf
 
-bootloader.o : ../bootloader/build/bootloader.o
-	mkdir -p build
-	cp ../bootloader/build/bootloader.o build/bootloader.o
-
-%.o : src/%.c
-	mkdir -p build
-	gc $(CFLAGS) -c $< $(addprefix -I, ${INCLUDE_DIRS}) -o build/$@
-
-clean:
-	rm -rf build
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	gcc $(CFLAGS) -c $< $(addprefix -I, ${INCLUDE_DIRS}) -o $(BUILD_DIR)/$@
 
