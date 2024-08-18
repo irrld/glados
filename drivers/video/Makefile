@@ -1,6 +1,6 @@
 INCLUDE_DIRS = ./include/ ../../kernel/include/
 
-CFLAGS := -std=c99 -ffreestanding -m64 -mno-red-zone -fno-builtin -nostdinc -Wall -Wextra
+CFLAGS := -std=c99 -ffreestanding -m64 -mno-red-zone -fno-builtin -nostdinc -Wall -Wextra -g -O0
 
 BUILD_DIR := ../../build
 

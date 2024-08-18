@@ -20,7 +20,6 @@ debug: build-image
 
 linked.o:
 	ld -T linker.ld -o elf64 $(BOOTLOADER) $(KERNEL) $(KERNEL_EXT) -o $(BUILD_DIR)/linked.o
-	objcopy --target=elf64-x86-64 --extract-symbol $(BUILD_DIR)/linked.o $(BUILD_DIR)/linked.o.sym
 
 linked.bin: linked.o
 	objcopy -O binary $(BUILD_DIR)/linked.o $(BUILD_DIR)/linked.bin
