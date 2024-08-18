@@ -2,8 +2,8 @@
 // Created by irrl on 8/12/23.
 //
 
-#ifndef TANTALUM_INT_H
-#define TANTALUM_INT_H
+#ifndef GLADOS_INT_H
+#define GLADOS_INT_H
 
 #define NULL 0
 
@@ -42,4 +42,4 @@ typedef uint64_t      uint_fast64_t;
 typedef  int64_t           intmax_t;
 typedef uint64_t          uintmax_t;
 
-#endif  //TANTALUM_INT_H
+#endif  //GLADOS_INT_H

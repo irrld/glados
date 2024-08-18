@@ -2,8 +2,8 @@
 // Created by irrl on 8/12/23.
 //
 
-#ifndef TANTALUM_KERNEL_H
-#define TANTALUM_KERNEL_H
+#ifndef GLADOS_KERNEL_H
+#define GLADOS_KERNEL_H
 
 #include "stdint.h"
 
@@ -30,4 +30,4 @@ unsigned short port_word_in(unsigned short port);
 
 void port_word_out(unsigned short port, unsigned short data);
 
-#endif  //TANTALUM_KERNEL_H
+#endif  //GLADOS_KERNEL_H

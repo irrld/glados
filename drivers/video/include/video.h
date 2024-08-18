@@ -2,8 +2,8 @@
 // Created by irrl on 8/12/23.
 //
 
-#ifndef TANTALUM_VIDEO_H
-#define TANTALUM_VIDEO_H
+#ifndef GLADOS_VIDEO_H
+#define GLADOS_VIDEO_H
 
 #include "stdint.h"
 #include "stdbool.h"
@@ -64,4 +64,4 @@ void set_color(uint8_t color);
 void print(const char* str);
 void println(const char* str);
 
-#endif  //TANTALUM_VIDEO_H
+#endif  //GLADOS_VIDEO_H
