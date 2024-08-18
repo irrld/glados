@@ -20,7 +20,7 @@ extern void halt();
 
 typedef void (*isr_t)(void);
 
-void register_interrupt_handler(uint8_t n, isr_t handler);
+void register_interrupt_handler(uint8_t irq, isr_t handler);
 
 unsigned char port_byte_in(unsigned short port);
 

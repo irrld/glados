@@ -1,7 +1,7 @@
 global idt_load
-extern idtp
+extern idtp_
 idt_load:
-    lidt [idtp]    ; load the IDT pointer using lidt instruction
+    lidt [idtp_]    ; load the IDT pointer using lidt instruction
     ret
 
 extern isr_common_stub

@@ -31,26 +31,26 @@ struct idt_ptr {
 
 #define IDT_ENTRIES 256
 
-struct idt_entry idt[IDT_ENTRIES];  // Create an IDT with 256 entries
-struct idt_ptr idtp;
-isr_t interrupt_handlers[IDT_ENTRIES];
+struct idt_entry idt_[IDT_ENTRIES];  // Create an IDT with 256 entries
+struct idt_ptr idtp_;
+isr_t interrupt_handlers_[IDT_ENTRIES];
 
 void idt_set_entry(int num, uint64_t base, uint16_t segment) {
-  idt[num].offset_1 = base & 0xFFFF;
-  idt[num].offset_2 = (base >> 16) & 0xFFFF;
-  idt[num].offset_3 = (base >> 32) & 0xFFFFFFFF;
+  idt_[num].offset_1 = base & 0xFFFF;
+  idt_[num].offset_2 = (base >> 16) & 0xFFFF;
+  idt_[num].offset_3 = (base >> 32) & 0xFFFFFFFF;
 
-  idt[num].segment_index = segment;
-  idt[num].rpl = 0;
-  idt[num].ti = 0;
-  idt[num].ist = 0;
-  idt[num].dpl = 0;
-  idt[num].p = 1;
-  idt[num].gate_type = 0xE; // Interrupt Gate
+  idt_[num].segment_index = segment;
+  idt_[num].rpl = 0;
+  idt_[num].ti = 0;
+  idt_[num].ist = 0;
+  idt_[num].dpl = 0;
+  idt_[num].p = 1;
+  idt_[num].gate_type = 0xE; // Interrupt Gate
 
-  idt[num].reserved1 = 0;
-  idt[num].reserved2 = 0;
-  idt[num].zero = 0;
+  idt_[num].reserved1 = 0;
+  idt_[num].reserved2 = 0;
+  idt_[num].zero = 0;
 }
 
 void send_eoi(uint8_t irq) {
@@ -61,22 +61,22 @@ void send_eoi(uint8_t irq) {
 }
 
 void isr_common_stub(uint8_t irq) {
-  if (interrupt_handlers[irq]) {
-    interrupt_handlers[irq]();
+  if (interrupt_handlers_[irq]) {
+    interrupt_handlers_[irq]();
     send_eoi(irq);
   }
 }
 
-void register_interrupt_handler(uint8_t n, isr_t handler) {
-  interrupt_handlers[n] = handler;
+void register_interrupt_handler(uint8_t irq, isr_t handler) {
+  interrupt_handlers_[irq] = handler;
 }
 
 void idt_init() {
-  memset(&interrupt_handlers, NULL, IDT_ENTRIES);
+  memset(&interrupt_handlers_, NULL, IDT_ENTRIES);
 
-  idtp.limit = sizeof(idt) - 1;
-  idtp.base = (uint64_t)idt;
-  memset(&idt, 0, idtp.limit + 1);
+  idtp_.limit = sizeof(idt_) - 1;
+  idtp_.base = (uint64_t)idt_;
+  memset(&idt_, 0, idtp_.limit + 1);
 
   idt_set_entry(33, (uint64_t)isr_33, 1);
 
@@ -111,7 +111,8 @@ void port_word_out(unsigned short port, unsigned short data) {
 void _start_kernel() {
   driver_init_video();
   set_color(FOREGROUND_LIGHT_BLUE | BACKGROUND_BLACK);
-  println("Hello from C!");
+  println("TANTALUM");
+  set_color(FOREGROUND_WHITE | BACKGROUND_BLACK);
   disable_cursor();
 
   idt_init();

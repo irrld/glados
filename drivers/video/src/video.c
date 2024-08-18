@@ -3,8 +3,8 @@
 #include "string.h"
 
 struct video_data {
-  char character_;
-  char color_;
+  char character;
+  char color;
 };
 
 volatile int cursor_pos_;
@@ -48,8 +48,8 @@ void handle_scroll() {
   /* Blank the last line by setting all bytes to 0 */
   for (int i = 0; i < MAX_COLS; i++) {
     struct video_data* data = get_video_data(i, MAX_ROWS - 1);
-    data->character_ = 0x0;
-    data->color_ = FOREGROUND_WHITE | BACKGROUND_BLACK;
+    data->character = 0x0;
+    data->color = FOREGROUND_WHITE | BACKGROUND_BLACK;
   }
 
   cursor_pos_ -= MAX_COLS;
@@ -89,8 +89,8 @@ void enable_cursor() {
 void clear_console() {
   for (int i = 0; i < MAX_COLS * MAX_ROWS; i++) {
     struct video_data* data = get_video_data_from_index(i);
-    data->character_ = 0x0;
-    data->color_ = FOREGROUND_WHITE | BACKGROUND_BLACK;
+    data->character = 0x0;
+    data->color = FOREGROUND_WHITE | BACKGROUND_BLACK;
   }
   cursor_pos_ = 0;
   update_cursor_pos();
@@ -127,8 +127,8 @@ void print(const char* str) {
       continue;
     }
     struct video_data* data = get_video_data_from_index(cursor_pos_);
-    data->character_ = str[i];
-    data->color_ = color_;
+    data->character = str[i];
+    data->color = color_;
     i++;
     cursor_pos_++;
   }
