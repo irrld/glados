@@ -60,9 +60,9 @@ void update_cursor_pos() {
     return;
   }
   port_byte_out(REG_SCREEN_CTRL, 0x0F);
-  port_byte_out(REG_SCREEN_DATA, (uint8_t) (cursor_pos_ + MAX_COLS & 0xFF));
+  port_byte_out(REG_SCREEN_DATA, (uint8_t) ((cursor_pos_ + MAX_COLS) & 0xFF));
   port_byte_out(REG_SCREEN_CTRL, 0x0E);
-  port_byte_out(REG_SCREEN_DATA, (uint8_t) ((cursor_pos_ + MAX_COLS >> 8) & 0xFF));
+  port_byte_out(REG_SCREEN_DATA, (uint8_t) (((cursor_pos_ + MAX_COLS) >> 8) & 0xFF));
 }
 
 void disable_cursor() {
@@ -96,18 +96,9 @@ void clear_console() {
   update_cursor_pos();
 }
 
-void set_cursor_pos(uint8_t row, uint8_t col) {
-  cursor_pos_ = row * MAX_COLS + col;
+void advance_cursor(int amount) {
+  cursor_pos_ += amount;
   update_cursor_pos();
-}
-
-struct cursor_pos get_cursor_pos() {
-  struct cursor_pos pos;
-  port_byte_out(REG_SCREEN_CTRL, 0x0F);
-  pos.x = port_byte_in(REG_SCREEN_DATA);
-  port_byte_out(REG_SCREEN_CTRL, 0x0E);
-  pos.y = port_byte_in(REG_SCREEN_DATA);
-  return pos;
 }
 
 void set_color(uint8_t color) {
@@ -132,6 +123,24 @@ void print(const char* str) {
     i++;
     cursor_pos_++;
   }
+  update_cursor_pos();
+  handle_scroll();
+}
+
+void print_char(const char c) {
+  if (c == 0) {
+    return;
+  }
+  if (c == '\n') {
+    cursor_pos_ = (cursor_pos_ / MAX_COLS + 1) * MAX_COLS;
+    update_cursor_pos();
+    handle_scroll();
+    return;
+  }
+  struct video_data* data = get_video_data_from_index(cursor_pos_);
+  data->character = c;
+  data->color = color_;
+  cursor_pos_++;
   update_cursor_pos();
   handle_scroll();
 }

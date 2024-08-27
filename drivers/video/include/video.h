@@ -50,18 +50,19 @@
 #define REG_SCREEN_DATA 0x3D5
 
 struct cursor_pos {
-  uint8_t x;
-  uint8_t y;
+  uint8_t row;
+  uint8_t col;
 };
 
 void driver_init_video();
 void disable_cursor();
 void enable_cursor();
 void clear_console();
-void set_cursor_pos(uint8_t row, uint8_t col);
-struct cursor_pos get_cursor_pos();
+void advance_cursor(int amount);
+void backspace();
 void set_color(uint8_t color);
 void print(const char* str);
+void print_char(const char c);
 void println(const char* str);
 
 #endif  //GLADOS_VIDEO_H
