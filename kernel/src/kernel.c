@@ -186,11 +186,13 @@ void pit_init(uint32_t frequency) {
 }
 
 void thread_a() {
-  println("A");
+  while (true) {
+  }
 }
 
 void thread_b() {
-  println("B");
+  while (true) {
+  }
 }
 
 void _start_kernel() {

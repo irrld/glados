@@ -30,6 +30,7 @@ isr_%1:
 
     mov rdi, %1  ; interrupt number is passed to the first parameter of the isr_common_stub function
     call irh_%1
+    mov rdi, %1  ; interrupt number is passed to the first parameter of the isr_common_stub function
     call send_eoi
 
     pop r15
@@ -83,18 +84,22 @@ isr_32:
     pop r15 ; rip
     pop r14 ; cs
     pop r13 ; rflags
+    pop r12 ; rsp
+    pop r11 ; ss
 
     ; Write r15, r14 and r13 to their respected locations in rdi (cpu_state struct)
     mov [rdi + 128], r15 ; rip
     mov [rdi + 144], r14 ; cs
     mov [rdi + 136], r13 ; rflags
+    mov [rdi + 40], r12 ; rsp
+    mov [rdi + 152], r11 ; ss
 
     ; Save stack
     mov [rdi + 32], rbp
-    mov [rdi + 40], rsp
 
     mov rdi, 32  ; interrupt number is passed to the first parameter of the isr_common_stub function
     call irh_32
+    mov rdi, 32  ; interrupt number is passed to the first parameter of the isr_common_stub function
     call send_eoi
 
     ; Load cpu state
@@ -108,6 +113,10 @@ isr_32:
     mov rsp, [rdi + 40]
     mov rsi, [rdi + 48]
 
+    mov r8, [rdi + 152] ; ss
+    push r8 ; Push ss
+    mov r8, [rdi + 40] ; rsp
+    push r8 ; Push rsp
     mov r8, [rdi + 136] ; rflags
     push r8 ; Push rflags
     mov r8, [rdi + 144] ; cs
