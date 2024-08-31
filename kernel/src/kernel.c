@@ -5,8 +5,13 @@
 #include "keyboard.h"
 #include "thread.h"
 #include "shell.h"
+#include "page.h"
+#include "malloc.h"
 
 extern void idt_load();
+
+extern void isr_13();
+extern void isr_14();
 extern void isr_32();
 extern void isr_33();
 extern void isr_40();
@@ -95,12 +100,46 @@ void send_eoi(uint8_t irq) {
   port_byte_out(PIC1_COMMAND, PIC_EOI);      // Tell PIC1 that IRQ has been handled
 }
 
+void kernel_panic(const char* str) {
+  driver_init_video();
+  set_color(FOREGROUND_RED | BACKGROUND_BLACK);
+  println("KERNEL PANIC");
+  println(str);
+  disable_cursor();
+  while (true) {
+    halt();
+  }
+}
+
 cpu_state_t* get_saved_cpu_state() {
   return &isr_cpu_state_;
 }
 
+void irh_0() {
+  // todo kill the current process instead of kernel panic-ing
+  kernel_panic("Divide-by-zero");
+}
+
+void irh_13() {
+  kernel_panic("General protection fault occurred");
+}
+
+void irh_14() {
+  // Read error code and faulting address
+  uint64_t error_code;
+  uint64_t faulting_address;
+
+  // Get the error code from the CPU
+  __asm__ volatile("mov %%cr2, %0" : "=r"(faulting_address));
+  __asm__ volatile("pushf; pop %0" : "=r"(error_code));
+
+  //printf("Page fault occurred! Address: %p, Error Code: %lx\n", faulting_address, error_code);
+  kernel_panic("Page fault occurred");
+}
+
 void irh_32() {
   handle_threads();
+  //println("TIMER!");
 }
 
 void irh_33() {
@@ -116,6 +155,8 @@ void idt_init() {
   idtp_.base = (uint64_t)idt_;
   memset(&idt_, 0, idtp_.limit + 1);
 
+  idt_set_entry(INTERRUPT_GENERAL_PROTECTION_FAULT, (uint64_t)isr_13, 1);
+  idt_set_entry(INTERRUPT_PAGE_FAULT, (uint64_t)isr_14, 1);
   idt_set_entry(INTERRUPT_TIMER, (uint64_t)isr_32, 1);
   idt_set_entry(INTERRUPT_KEYBOARD, (uint64_t)isr_33, 1);
   idt_set_entry(INTERRUPT_RTC, (uint64_t)isr_40, 1);
@@ -187,29 +228,78 @@ void pit_init(uint32_t frequency) {
 
 void thread_a() {
   while (true) {
+    disable_interrupts();
+    println("TANRI");
+    enable_interrupts();
   }
 }
 
 void thread_b() {
   while (true) {
+    disable_interrupts();
+    println("ULUDUR");
+    enable_interrupts();
   }
 }
 
-void _start_kernel() {
-  driver_init_video();
-  set_color(FOREGROUND_LIGHT_BLUE | BACKGROUND_BLACK);
-  println("TANTALUM");
-  set_color(FOREGROUND_WHITE | BACKGROUND_BLACK);
-  enable_cursor();
+typedef struct mmap_entry {
+  uint64_t base_addr;
+  uint64_t length;
+  uint32_t type;
+  uint32_t acpi_attr;
+} __attribute__((packed)) mmap_entry_t;
 
+extern mmap_entry_t mmap_entries_[];
+extern uint32_t mmap_entry_count_;
+uint64_t available_memory_;
+
+void parse_memory_map() {
+  available_memory_ = 0;
+  mmap_entry_t* entry = (mmap_entry_t*) mmap_entries_;
+
+  while (entry->type != 0) { // Assuming 0 is an invalid type and end of entries
+    if (entry->type == 1) {  // Type 1 indicates usable memory
+      uint64_t start_addr = entry->base_addr;
+      uint64_t size = entry->length;
+      available_memory_ += size;
+    }
+
+    entry++;  // Move to the next entry
+  }
+
+  if (available_memory_ <= 0) {
+    kernel_panic("No available memory");
+  } else {
+    print("Total available memory: 0x");
+    char str[32];
+    itoa(available_memory_, str, 16);
+    println(str);
+  }
+}
+
+void start_kernel(uintptr_t image_end) {
+  driver_init_video();
+  set_color(FOREGROUND_LIGHT_GRAY | BACKGROUND_BLACK);
+
+  println("Initializing IDT");
   idt_init();
+  println("Initializing PIC");
   pic_init();
+  println("Initializing PIT");
   pit_init(100); // 10ms
+
+
+  parse_memory_map();
+  println("Initializing paging");
+  paging_init((image_end + 0xFFF) & ~0xFFF); // Aligns the image end address to 0x1000
+  println("Initializing malloc");
+  malloc_init();
+  println("Creating threads");
 
   create_thread(thread_a);
   create_thread(thread_b);
 
+  println("Enabling interrupts");
   enable_interrupts();
-
-  shell_main();
+  // After this, we halt and threads should get activated by the timer
 }

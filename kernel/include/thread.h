@@ -9,14 +9,11 @@
 #include "stdbool.h"
 #include "kernel.h"
 
-#define THREAD_STACK_SIZE 0x1000
-
-
 typedef struct thread {
   uint64_t id;
   cpu_state_t state;
   void (*entry_point)(void);
-  void* stack;
+  void* stack_pointer;
 } thread_t;
 
 thread_t* create_thread(void (*entry_point)(void));

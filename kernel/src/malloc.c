@@ -3,22 +3,50 @@
 //
 
 #include "malloc.h"
+#include "stdint.h"
+#include "page.h"
+/*
+typedef struct heap_block_bm {
+  struct heap_block_bm* next;
+  uint32_t size;
+  uint32_t used;
+  uint32_t bsize;
+  uint32_t lfb;
+} heap_block_bm_t;
 
-#define HEAP_SIZE 0x20000
+typedef struct heap_bm {
+  heap_block_bm_t* fblock;
+} heap_bm_t;
 
-uint8_t heap[HEAP_SIZE];
-uint64_t heap_top = 0;
+heap_bm_t kheap;*/
 
-void* malloc(uint64_t size) {
-  if (heap_top + size >= HEAP_SIZE) {
-    // Out of memory
-    return NULL;
+uintptr_t heap_start_;
+size_t used_;
+uintptr_t heap_end_;
+
+void extend_heap() {
+  map_page(heap_end_, alloc_page(), PAGE_RW);
+  heap_end_ = heap_end_ + PAGE_SIZE;
+}
+
+void malloc_init() {
+  heap_start_ = 0x10000000;
+  heap_end_ = heap_start_;
+  extend_heap();
+}
+
+void* malloc(size_t size) {
+  uintptr_t heap_start = heap_start_ + used_;
+  while ((heap_end_ - heap_start) < size) {
+    extend_heap();
   }
-  void* ptr = &heap[heap_top];
-  heap_top += size;
-  return ptr;
+  used_ += size;
+  return (void*) heap_start;
 }
 
 void free(void* ptr) {
-  // fuck
 }
+
+
+
+

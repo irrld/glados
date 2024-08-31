@@ -41,8 +41,10 @@ void handle_scroll() {
   }
   /* Shuffle the rows back one. */
   for (int row = 1; row < MAX_ROWS; row++) {
-    memcpy(get_video_data(0, row - 1),
-           get_video_data(0, row),
+    void* dest = get_video_data(0, row - 1);
+    void* src = get_video_data(0, row);
+    memcpy(dest,
+           src,
            MAX_COLS * 2);
   }
   /* Blank the last line by setting all bytes to 0 */

@@ -3,8 +3,8 @@
 MEMORY
 {
     boot_sector (rwx) : ORIGIN = 0x7c00, LENGTH = 512
-    stage2 (rwx) : ORIGIN = 0x7e00, LENGTH = 512
-    kernel (rwx) : ORIGIN = 0x8000, LENGTH = 0x1600000
+    stage2 (rwx) : ORIGIN = 0x7e00, LENGTH = 0x1000
+    kernel (rwx) : ORIGIN = 0x8e00, LENGTH = 0x16000
 }
 
 ENTRY(__start)
@@ -35,6 +35,7 @@ SECTIONS
         . = . + 0x8000;  /* Reserve 32KB for stack */
         __stack_end = .;
     } > kernel
+    __image_end = .;
 
     /DISCARD/ : { *(.comment) }
 }

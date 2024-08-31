@@ -1,10 +1,15 @@
 
-    section .stage2
-
+section .stage2
     [bits 16]
 
     mov bx, stage2_msg
     call print_string
+
+    mov ax, 0x0000     ; Set up segment register
+    mov es, ax
+    mov di, mmap_entries_     ; Point di to the start of the reserved buffer
+    call do_e820       ; Call the function
+    mov [mmap_entry_count_], bp
 
     ;; Load GDT and switch to protected mode
 
@@ -22,7 +27,18 @@
     jmp CODE_SEG32:start_prot_mode
 
 %include "include/print.asm"
+%include "include/memory_map.asm"
 
+section .bss
+global mmap_entries_
+mmap_entries_:
+     resb 1024 // 24 * 42
+
+global mmap_entry_count_
+mmap_entry_count_:
+     resb 4
+
+section .stage2
 
     [bits 32]
 
@@ -51,7 +67,7 @@ start_prot_mode:
     ;; The EFER (Extended Feature Enable Register) MSR (Model-Specific Register) contains fields
     ;; related to IA-32e mode operation. Bit 8 if this MSR is the LME (long mode enable) flag
     ;; that enables IA-32e operation.
-    mov ecx, 0xc0000080
+    mov ecx, 0xC0000080
     rdmsr
     or eax, 1 << 8
     wrmsr
@@ -109,6 +125,7 @@ build_page_table:
     add edi, PAGE64_TAB_SIZE
     mov ebx, 11b
     mov ecx, PAGE64_TAB_ENT_NUM
+
 build_page_table_set_entry:
     mov dword [edi], ebx
     add ebx, PAGE64_PAGE_SIZE
@@ -127,8 +144,11 @@ start_long_mode:
     extern __stack_end
     mov rsp, __stack_end
 
-    extern _start_kernel
-    call _start_kernel
+    extern __image_end
+    mov rdi, __image_end
+
+    extern start_kernel
+    call start_kernel
 
 end64:
     hlt
@@ -139,6 +159,7 @@ end64:
 %include "include/gdt32.asm"
 %include "include/gdt64.asm"
 
-stage2_msg: db "Hello from stage 2", 13, 10, 0
-prot_mode_msg: db "Hello from protected mode", 0
-long_mode_msg: db "Entered 64-bit mode", 0
+stage2_msg: db "Disk load successful", 13, 10, 0
+mem_failed_msg: db "Failed to get memory", 13, 10, 0
+prot_mode_msg: db "Switched to protected mode", 0
+long_mode_msg: db "Switched to 64-bit long mode", 0

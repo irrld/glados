@@ -7,7 +7,9 @@
 
 #include "stdint.h"
 
-void* malloc(uint64_t size);
+void malloc_init();
+
+void* malloc(size_t size);
 
 void free(void* ptr);
 

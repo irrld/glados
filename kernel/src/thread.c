@@ -16,7 +16,15 @@ typedef struct entry {
 entry_t* thread_head_ = NULL;
 
 void* allocate_stack() {
-  return malloc(THREAD_STACK_SIZE) + THREAD_STACK_SIZE - 1;
+  size_t stack_size = 0x800000;
+  void* stack_base = malloc(stack_size);
+
+  if (stack_base == NULL) {
+    // kernel panic out-of-memory error
+  }
+
+  // Initialize the stack pointer to the top of the allocated stack
+  return stack_base + stack_size;
 }
 
 void delete_stack(void* ptr) {
@@ -24,22 +32,25 @@ void delete_stack(void* ptr) {
 }
 
 void on_thread_delete(thread_t* thread) {
-  delete_stack(thread->stack);
+  delete_stack(thread->stack_pointer);
 }
 
 void on_thread_create(thread_t* thread) {
-  thread->stack = allocate_stack();
+  thread->stack_pointer = allocate_stack();
   memset(&thread->state, NULL, sizeof(cpu_state_t));
   thread->state.rip = (uint64_t) thread->entry_point;
-  thread->state.rsp = (uint64_t) thread->stack;
-  thread->state.rbp = thread->state.rsp;
-  thread->state.rflags = 0x246; // Enable interrupts
+  thread->state.rbp = (uint64_t) thread->stack_pointer;
+  thread->state.rsp = thread->state.rbp;
+  thread->state.rflags = 0x202; // Enable interrupts
   thread->state.cs = 0x08; // Code segment selector for 64 bit
   thread->state.ss = 0x10; // Stack segment selector for 64 bit
 }
 
 thread_t* create_thread(void (*entry_point)(void)) {
   thread_t* thread = malloc(sizeof(thread_t));
+  if (!thread) {
+    kernel_panic("Memory allocation error!");
+  }
   thread->entry_point = entry_point;
   thread->id = ++thread_counter_;
   entry_t* entry = malloc(sizeof(entry_t));

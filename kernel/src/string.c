@@ -20,7 +20,7 @@ void* memset(void* dst, char value, size_t len) {
   return dst;
 }
 
-#define BUFFER_SIZE 12  // Enough for INT_MIN and null terminator
+#define BUFFER_SIZE 32
 
 // Converts an integer to a string
 void itoa(int num, char *str, int base) {

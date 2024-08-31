@@ -21,6 +21,8 @@
 
 #define PIPELINE_MAX 256
 
+#define INTERRUPT_GENERAL_PROTECTION_FAULT 13
+#define INTERRUPT_PAGE_FAULT 14
 #define INTERRUPT_TIMER 32
 #define INTERRUPT_KEYBOARD 33
 #define INTERRUPT_RTC 40
@@ -44,8 +46,14 @@ extern void halt();
 
 void send_eoi(uint8_t irq);
 
+[[noreturn]]
+void kernel_panic(const char* str);
+
 cpu_state_t* get_saved_cpu_state();
 
+void irh_0();
+void irh_13();
+void irh_14();
 void irh_32();
 void irh_33();
 void irh_34();

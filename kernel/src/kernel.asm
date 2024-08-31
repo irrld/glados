@@ -8,7 +8,7 @@ idt_load:
     lidt [idtp_]    ; load the IDT pointer using lidt instruction
     ret
 
-%macro ISR_STUB 1
+%macro ISR_STUB_COMMON 1
 extern irh_%1
 global isr_%1
 isr_%1:
@@ -52,16 +52,14 @@ isr_%1:
     iretq
 %endmacro
 
-; 32 is special and implemented differently
-ISR_STUB 33
-ISR_STUB 40
-
-extern irh_32
-global isr_32
-isr_32:
-    ; Save cpu state
-
+; ISR stub that saves the cpu state to a variable instead of the stack
+%macro ISR_STUB_SWITCHING 1
+extern irh_%1
+global isr_%1
+isr_%1:
+; Save cpu state
     push rdi
+
     mov rdi, isr_cpu_state_
 
     mov [rdi + 64], r8
@@ -76,30 +74,31 @@ isr_32:
     mov [rdi + 8], rbx
     mov [rdi + 16], rcx
     mov [rdi + 24], rdx
+    mov [rdi + 32], rbp
     mov [rdi + 48], rsi
     pop rsi ; Restore rdi to rsi
     mov [rdi + 56], rsi ; Write rdi (on rsi)
 
-    ; Pop RIP, CS and RFLAGS to r15, r14 and r13
-    pop r15 ; rip
-    pop r14 ; cs
-    pop r13 ; rflags
-    pop r12 ; rsp
-    pop r11 ; ss
+    ; Pop RIP, CS and RFLAGS to r15, r14 and r13..
+    pop r15 ; RIP
+    pop r14 ; CS
+    pop r13 ; RFLAGS
+    pop r12 ; RSP
+    pop r11 ; SS
 
     ; Write r15, r14 and r13 to their respected locations in rdi (cpu_state struct)
-    mov [rdi + 128], r15 ; rip
-    mov [rdi + 144], r14 ; cs
-    mov [rdi + 136], r13 ; rflags
-    mov [rdi + 40], r12 ; rsp
-    mov [rdi + 152], r11 ; ss
+    mov [rdi + 128], r15 ; RIP
+    mov [rdi + 144], r14 ; CS
+    mov [rdi + 136], r13 ; RFLAGS
+    mov [rdi + 40], r12 ; RSP
+    mov [rdi + 152], r11 ; SS
 
-    ; Save stack
-    mov [rdi + 32], rbp
+    mov rsp, [rdi + 40]
+    mov rbp, [rdi + 32]
 
-    mov rdi, 32  ; interrupt number is passed to the first parameter of the isr_common_stub function
-    call irh_32
-    mov rdi, 32  ; interrupt number is passed to the first parameter of the isr_common_stub function
+    mov rdi, %1  ; interrupt number is passed to the first parameter of the isr_common_stub function
+    call irh_%1
+    mov rdi, %1  ; interrupt number is passed to the first parameter of the isr_common_stub function
     call send_eoi
 
     ; Load cpu state
@@ -110,19 +109,22 @@ isr_32:
     mov rcx, [rdi + 16]
     mov rdx, [rdi + 24]
     mov rbp, [rdi + 32]
-    mov rsp, [rdi + 40]
     mov rsi, [rdi + 48]
 
-    mov r8, [rdi + 152] ; ss
-    push r8 ; Push ss
-    mov r8, [rdi + 40] ; rsp
-    push r8 ; Push rsp
-    mov r8, [rdi + 136] ; rflags
-    push r8 ; Push rflags
-    mov r8, [rdi + 144] ; cs
-    push r8 ; Push cs
-    mov r8, [rdi + 128] ; rip
-    push r8 ; Push rip
+    mov rsp, [rdi + 40] ; Restore RSP before pushing values back
+
+    mov r8, 0x00      ; Unknown
+    push r8                  ; Push unknown value??
+    mov r8, [rdi + 152]      ; SS
+    push r8                  ; Push SS
+    mov r8, [rdi + 40]       ; RSP
+    push r8                  ; Push RSP
+    mov r8, [rdi + 136]      ; RFLAGS
+    push r8                  ; Push RFLAGS
+    mov r8, [rdi + 144]      ; CS
+    push r8                  ; Push CS
+    mov r8, [rdi + 128]      ; RIP
+    push r8                  ; Push RIP
 
     mov r8, [rdi + 64]
     mov r9, [rdi + 72]
@@ -136,6 +138,14 @@ isr_32:
     mov rdi, [rdi + 56] ; Finally, load rdi
 
     iretq
+%endmacro
+
+ISR_STUB_SWITCHING 0
+ISR_STUB_SWITCHING 13
+ISR_STUB_SWITCHING 14
+ISR_STUB_SWITCHING 32
+ISR_STUB_COMMON 33
+ISR_STUB_COMMON 40
 
 global enable_interrupts
 enable_interrupts:
