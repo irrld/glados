@@ -5,8 +5,7 @@
 #ifndef GLADOS_TIME_H
 #define GLADOS_TIME_H
 
-#include "stdint.h"
-#include "stdbool.h"
+#include "stddef.h"
 
 uint8_t read_rtc_register(int reg);
 uint8_t bcd_to_binary(uint8_t bcd);

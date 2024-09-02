@@ -5,8 +5,7 @@
 #ifndef GLADOS_KERNEL_H
 #define GLADOS_KERNEL_H
 
-#include "stdint.h"
-#include "stdbool.h"
+#include "stddef.h"
 
 #define PIC1		0x20		/* IO base address for master PIC */
 #define PIC2		0xA0		/* IO base address for slave PIC */
@@ -27,6 +26,10 @@
 #define INTERRUPT_KEYBOARD 33
 #define INTERRUPT_RTC 40
 
+#define KERNEL_CODE_SELECTOR 0x08
+#define KERNEL_DATA_SELECTOR 0x10
+#define TSS_SELECTOR 0x18
+
 typedef struct cpu_state {
   uint64_t rax, rbx, rcx, rdx;
   uint64_t rbp, rsp, rsi, rdi;
@@ -46,8 +49,7 @@ extern void halt();
 
 void send_eoi(uint8_t irq);
 
-[[noreturn]]
-void kernel_panic(const char* str);
+void kernel_panic(const char* str) __attribute__((noreturn));
 
 cpu_state_t* get_saved_cpu_state();
 

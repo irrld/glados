@@ -20,11 +20,11 @@ run: build-image
 debug: build-image
 	qemu-system-x86_64 -s -S -drive format=raw,file=build/image.img
 
-linked.o:
-	ld -T linker.ld -o elf64 $(BOOTLOADER) $(KERNEL) $(KERNEL_EXT) -o $(BUILD_DIR)/linked.o
+linked.elf:
+	ld -T linker.ld -o elf64 $(BOOTLOADER) $(KERNEL) $(KERNEL_EXT) -o $(BUILD_DIR)/linked.elf
 
-linked.bin: linked.o
-	objcopy -O binary $(BUILD_DIR)/linked.o $(BUILD_DIR)/linked.bin
+linked.bin: linked.elf
+	objcopy -O binary $(BUILD_DIR)/linked.elf $(BUILD_DIR)/linked.bin
 
 build-image: all linked.bin
 	qemu-img create build/system.img 1G

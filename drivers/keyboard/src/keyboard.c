@@ -5,7 +5,6 @@
 #include "keyboard.h"
 #include "kernel.h"
 #include "string.h"
-#include "stdbool.h"
 
 const char keymap_[128] = {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8', /* 0x00 - 0x09 */

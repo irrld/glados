@@ -2,10 +2,10 @@
 // Created by root on 8/28/24.
 //
 
-#include "stdint.h"
 #include "page.h"
-#include "string.h"
 #include "kernel.h"
+#include "stddef.h"
+#include "string.h"
 #include "video.h"
 
 typedef struct pgd_entry {
@@ -89,7 +89,6 @@ uintptr_t alloc_page() {
   // Make sure we always have enough pages.
   if (!extend_lock_ && available_space < EXTRA_SPACE) {
     extend_lock_ = true;
-    uintptr_t physical_address = get_physical_address(last_free_page_);
     identity_map(last_free_page_, EXTRA_SPACE);
     last_free_page_ += EXTRA_SPACE;
     extend_lock_ = false;
@@ -165,7 +164,6 @@ void map_page(uintptr_t virtual_addr, uintptr_t physical_addr, uint64_t flags) {
   flush_tlb_entry(virtual_addr);
   uintptr_t located = get_physical_address(virtual_addr);
   if (located != physical_addr) {
-    get_physical_address(virtual_addr);
     kernel_panic("Mapped page did not match the requested address");
   }
 }
@@ -218,10 +216,8 @@ void identity_map(uintptr_t start_addr, uint64_t size) {
 }
 
 void paging_init(uintptr_t start_addr) {
-  char str[32];
-  print("Paging will start from: 0x");
-  itoa(start_addr, str, 16);
-  println(str);
+  kprintf("Initializing paging\n");
+  kprintf("Paging will start from 0x%x\n", start_addr);
   pml4 = (uint64_t*) read_cr3();
   first_free_page_ = start_addr;
   next_free_page_ = start_addr;

@@ -5,6 +5,11 @@
 #ifndef GLADOS_INT_H
 #define GLADOS_INT_H
 
+#define true 1
+#define false 0
+
+#define bool _Bool
+
 #define NULL 0
 
 typedef unsigned char       uint8_t;
@@ -41,5 +46,11 @@ typedef uint64_t      uint_fast64_t;
 
 typedef  int64_t           intmax_t;
 typedef uint64_t          uintmax_t;
+
+typedef __builtin_va_list va_list;  // Use the compiler's built-in type for va_list
+
+#define va_start(ap, last) __builtin_va_start(ap, last)  // Initialize ap
+#define va_arg(ap, type) __builtin_va_arg(ap, type)      // Retrieve next argument
+#define va_end(ap) __builtin_va_end(ap)
 
 #endif  //GLADOS_INT_H

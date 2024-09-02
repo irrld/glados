@@ -1,7 +1,7 @@
 
     align 16
 gdt64_start:
-    ;; 8-byte null descriptor (index 0).
+    ;; 16-byte null descriptor (index 0).
     dd 0x0
     dd 0x0
 
@@ -22,7 +22,7 @@ gdt64_data_segment:
     ;; 0-3: segment type that specifies a read/write data segment
     db 10010010b
     db 10101111b
-    dw 0x00
+    db 0x00
 
 gdt64_end:
 

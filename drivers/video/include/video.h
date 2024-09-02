@@ -5,8 +5,7 @@
 #ifndef GLADOS_VIDEO_H
 #define GLADOS_VIDEO_H
 
-#include "stdint.h"
-#include "stdbool.h"
+#include "stddef.h"
 
 #define VIDEO_ADDRESS 0xb8000
 #define MAX_ROWS 25
@@ -61,8 +60,8 @@ void clear_console();
 void advance_cursor(int amount);
 void backspace();
 void set_color(uint8_t color);
-void print(const char* str);
-void print_char(const char c);
-void println(const char* str);
+
+void kputc(const char c);
+int kprintf(const char* str, ...);
 
 #endif  //GLADOS_VIDEO_H

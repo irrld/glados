@@ -5,12 +5,12 @@
 #ifndef GLADOS_MALLOC_H
 #define GLADOS_MALLOC_H
 
-#include "stdint.h"
+#include "stddef.h"
 
-void malloc_init();
+void kmalloc_init();
 
-void* malloc(size_t size);
+void* kmalloc(size_t size);
 
-void free(void* ptr);
+void kfree(void* ptr);
 
 #endif  //GLADOS_MALLOC_H

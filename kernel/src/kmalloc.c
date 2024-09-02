@@ -2,9 +2,9 @@
 // Created by root on 8/27/24.
 //
 
-#include "malloc.h"
-#include "stdint.h"
+#include "kmalloc.h"
 #include "page.h"
+
 /*
 typedef struct heap_block_bm {
   struct heap_block_bm* next;
@@ -29,13 +29,15 @@ void extend_heap() {
   heap_end_ = heap_end_ + PAGE_SIZE;
 }
 
-void malloc_init() {
+void kmalloc_init() {
+  kprintf("Initializing malloc\n", heap_start_);
   heap_start_ = 0x10000000;
   heap_end_ = heap_start_;
   extend_heap();
+  kprintf("Heap will start from: 0x%llx\n", heap_start_);
 }
 
-void* malloc(size_t size) {
+void* kmalloc(size_t size) {
   uintptr_t heap_start = heap_start_ + used_;
   while ((heap_end_ - heap_start) < size) {
     extend_heap();
@@ -44,7 +46,7 @@ void* malloc(size_t size) {
   return (void*) heap_start;
 }
 
-void free(void* ptr) {
+void kfree(void* ptr) {
 }
 
 
