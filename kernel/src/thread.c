@@ -22,11 +22,11 @@ void* allocate_stack() {
   void* stack_base = kmalloc(stack_size);
 
   if (stack_base == NULL) {
-    // kernel panic out-of-memory error
+    kernel_panic("Could not allocate stack for thread");
   }
 
   // Initialize the stack pointer to the top of the allocated stack
-  return stack_base + stack_size;
+  return stack_base + stack_size - 0x10;
 }
 
 void delete_stack(void* ptr) {
@@ -161,10 +161,16 @@ void wake_up_thread(thread_t* thread) {
   thread->sleeping = false;
 }
 
+static bool lock = false;
 void handle_threads() {
+  if (lock) {
+    kernel_panic("WTF!");
+  }
+  lock = true;
   thread_t* thread = lookup_thread_to_switch(thread_head_);
   if (thread) {
     cpu_state_t* saved_state = get_saved_cpu_state();
     switch_to_thread(saved_state, thread);
   }
+  lock = false;
 }

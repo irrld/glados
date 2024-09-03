@@ -29,8 +29,8 @@ void wake_up_thread(thread_t* thread);
 
 // Will save the cpu state, without the RIP register
 extern void save_cpu_state();
-extern void load_cpu_state(cpu_state_t* state) __attribute__((noreturn));
-void force_switch_thread(thread_t* thread) __attribute__((noreturn));
+extern void load_cpu_state(cpu_state_t* state);// __attribute__((noreturn));
+void force_switch_thread(thread_t* thread);// __attribute__((noreturn));
 
 void handle_threads();
 #endif  //GLADOS_THREAD_H

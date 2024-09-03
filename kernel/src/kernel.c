@@ -169,7 +169,8 @@ void irh_32() {
 }
 
 void irh_33() {
-  kprintf("KEYBOARD!\n");
+  uint8_t scancode = port_byte_in(KEYBOARD_DATA_PORT);
+  kprintf("Key pressed: %u", scancode);
 }
 
 void irh_40() {
@@ -253,7 +254,7 @@ void pic_init() {
   port_byte_out(PIC1_DATA, 0xFF);
   port_byte_out(PIC2_DATA, 0xFF);
 
-  irq_clear_mask(0); // IRQ0 (System)
+  irq_clear_mask(0); // IRQ0 (System Timer)
   irq_clear_mask(1); // IRQ1 (Keyboard)
   irq_clear_mask(8); // IRQ8 (RTC)
 }

@@ -11,8 +11,8 @@
 #define DECIMAL 0x0A
 #define HEX 0x10
 
-void* memcpy(void* dst, const void* src, size_t len);// __attribute__((optimize(1)));
-void* memset(void* dst, char value, size_t len);
+void* memcpy(void* dst, const void* src, size_t len) __attribute__((optimize(1)));
+void* memset(void* dst, char value, size_t len)  __attribute__((optimize(1)));
 
 // Converts an integer to a string
 void itoa(int num, char* buf, int radix);
