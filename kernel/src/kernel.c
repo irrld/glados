@@ -8,6 +8,7 @@
 #include "string.h"
 #include "thread.h"
 #include "video.h"
+#include "time.h"
 
 extern void load_gdt();
 extern void load_idt();
@@ -120,6 +121,18 @@ void idt_set_entry(uint8_t irq, uint64_t base, uint16_t segment_selector, uint8_
   idt_[irq].zero = 0;
 }
 
+// todo handle nmi's
+// todo apic
+void enable_nmi() {
+  port_byte_out(CMOS_ADDRESS, port_byte_in(CMOS_ADDRESS) & 0x7F);
+  port_byte_in(CMOS_DATA);
+}
+
+void disable_nmi() {
+  port_byte_out(CMOS_ADDRESS, port_byte_in(CMOS_ADDRESS) | 0x80);
+  port_byte_in(CMOS_DATA);
+}
+
 void send_eoi(uint8_t irq) {
   if (irq >= 8) {
     port_byte_out(PIC2_COMMAND, PIC_EOI);  // Tell PIC2 that IRQ has been handled
@@ -174,7 +187,7 @@ void irh_33() {
 }
 
 void irh_40() {
-  kprintf("RTC!\n");
+  handle_rtc();
 }
 
 void idt_init() {
@@ -239,6 +252,11 @@ void gdt_init() {
 
 void pic_init() {
   kprintf("Initializing PIC\n");
+
+  // Mask all interrupts initially
+  port_byte_out(PIC1_DATA, 0xFF);  // Mask all IRQs on PIC1
+  port_byte_out(PIC2_DATA, 0xFF);  // Mask all IRQs on PIC2
+
   // Initialize PIC1
   port_byte_out(PIC1_COMMAND, 0x11);   // Initialization command
   port_byte_out(PIC1_DATA, 0x20);      // Vector offset for PIC1
@@ -251,12 +269,13 @@ void pic_init() {
   port_byte_out(PIC2_DATA, 0x02);      // Cascade PIC2 to PIC1
   port_byte_out(PIC2_DATA, 0x01);      // 8086/88 mode
 
-  port_byte_out(PIC1_DATA, 0xFF);
-  port_byte_out(PIC2_DATA, 0xFF);
-
   irq_clear_mask(0); // IRQ0 (System Timer)
   irq_clear_mask(1); // IRQ1 (Keyboard)
   irq_clear_mask(8); // IRQ8 (RTC)
+
+  // Send End of Interrupt to both PICs to clear any pending interrupts
+  port_byte_out(PIC1_COMMAND, PIC_EOI);
+  port_byte_out(PIC2_COMMAND, PIC_EOI);
 }
 
 unsigned char port_byte_in(unsigned short port) {
@@ -335,34 +354,39 @@ void parse_memory_map() {
 static mutex_t mutex_;
 
 void thread_a() {
-  while (true) {
-    mutex_lock(&mutex_);
-    kprintf("A\n");
-    mutex_unlock(&mutex_);
+  while(1) {
+
   }
+  /*while (true) {
+    mutex_lock(&mutex_);
+    //kprintf("A\n");
+    mutex_unlock(&mutex_);
+  }*/
 }
 
 void thread_b() {
-  while (true) {
-    mutex_lock(&mutex_);
-    kprintf("B\n");
-    mutex_unlock(&mutex_);
+  while(1) {
+
   }
+  /*while (true) {
+    mutex_lock(&mutex_);
+    //kprintf("B\n");
+    mutex_unlock(&mutex_);
+  }*/
 }
 
 void start_kernel(uintptr_t image_end) {
   driver_init_video();
   set_color(FOREGROUND_LIGHT_GRAY | BACKGROUND_BLACK);
 
-  idt_init();
-  pic_init();
-  pit_init(100); // 10ms
-
+  gdt_init();
   parse_memory_map();
   paging_init((image_end + 0xFFF) & ~0xFFF); // Aligns the image end address to 0x1000
   kmalloc_init();
-
-  gdt_init();
+  idt_init();
+  time_init();
+  pit_init(100); // 10ms
+  pic_init();
   tss_init();
 
   kprintf("Creating threads\n");

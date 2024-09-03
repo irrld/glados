@@ -46,7 +46,8 @@ typedef struct cpu_state {
 extern void disable_interrupts();
 extern void enable_interrupts();
 extern void halt();
-
+void enable_nmi();
+void disable_nmi();
 void send_eoi(uint8_t irq);
 
 void kernel_panic(const char* str) __attribute__((noreturn));
@@ -59,6 +60,7 @@ void irh_14();
 void irh_32();
 void irh_33();
 void irh_34();
+void irh_40();
 
 unsigned char port_byte_in(unsigned short port);
 void port_byte_out(unsigned short port, unsigned char data);

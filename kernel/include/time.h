@@ -7,9 +7,6 @@
 
 #include "stddef.h"
 
-uint8_t read_rtc_register(int reg);
-uint8_t bcd_to_binary(uint8_t bcd);
-
 typedef struct rtc_time {
   uint8_t second;
   uint8_t minute;
@@ -20,8 +17,9 @@ typedef struct rtc_time {
 } rtc_time_t;
 
 rtc_time_t get_bios_time();
-
-// Time in unix time
 uint64_t get_unix_time();
+
+void time_init();
+void handle_rtc();
 
 #endif  //GLADOS_TIME_H
