@@ -1,6 +1,7 @@
 INCLUDE_DIRS = ../drivers/video/include ../drivers/keyboard/include ../shell/include ./include/
 
-CFLAGS :=-Wall -Wextra -Wpedantic -m64 -O0 -std=c17 -finline-functions -fno-stack-protector -nostdinc -ffreestanding -Wno-unused-function -Wno-unused-parameter -g -mno-red-zone -mstackrealign -mpreferred-stack-boundary=4 -mgeneral-regs-only
+include ../common.mk
+
 BUILD_DIR := ../build
 SRC_DIR := src
 

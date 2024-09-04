@@ -5,7 +5,7 @@
 #ifndef GLADOS_TIME_H
 #define GLADOS_TIME_H
 
-#include "stddef.h"
+#include "glados/stddef.h"
 
 typedef struct rtc_time {
   uint8_t second;
@@ -19,7 +19,7 @@ typedef struct rtc_time {
 rtc_time_t get_bios_time();
 uint64_t get_unix_time();
 
-void time_init();
+void init_time();
 void handle_rtc();
 
 #endif  //GLADOS_TIME_H

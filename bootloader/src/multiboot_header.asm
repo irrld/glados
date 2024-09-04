@@ -8,9 +8,9 @@ multiboot_header_start:
 
     dw 5
     dw 0
-    dd 8
-    dw 5
-    dw 0
-    dd 8
+    dd 20
+    dd 0
+    dd 0
+    dd 0
 multiboot_header_end:
 

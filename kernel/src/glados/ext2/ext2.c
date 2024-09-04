@@ -9,7 +9,9 @@
 #define ATA_DATA_REG (ATA_PRIMARY_IO_BASE)
 #define ATA_COMMAND_REG (ATA_PRIMARY_IO_BASE + 7)
 #define ATA_CMD_READ_SECTORS 0x20
-#define SUPERBLOCK_SIZE sizeof(ext2_superblock_t);
+// todo
+#define SUPERBLOCK_SIZE sizeof(ext2_superblock_t)
+#define SUPERBLOCK_OFFSET 0
 
 // Wait until the disk is ready to accept commands
 void wait_for_disk() {

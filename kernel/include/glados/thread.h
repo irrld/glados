@@ -5,8 +5,8 @@
 #ifndef GLADOS_THREAD_H
 #define GLADOS_THREAD_H
 
-#include "kernel.h"
-#include "stddef.h"
+#include "glados/kernel.h"
+#include "glados/stddef.h"
 
 typedef struct thread {
   uint64_t id;

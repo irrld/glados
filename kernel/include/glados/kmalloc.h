@@ -5,7 +5,7 @@
 #ifndef GLADOS_MALLOC_H
 #define GLADOS_MALLOC_H
 
-#include "stddef.h"
+#include "glados/stddef.h"
 
 void kmalloc_init();
 

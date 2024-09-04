@@ -5,8 +5,8 @@
 #ifndef GLADOS_KERNEL_H
 #define GLADOS_KERNEL_H
 
-#include "stddef.h"
-#include "kdef.h"
+#include "glados/stddef.h"
+#include "glados/kdef.h"
 
 typedef struct cpu_state {
   uint64_t rax, rbx, rcx, rdx;

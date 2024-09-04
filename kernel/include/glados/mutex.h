@@ -5,7 +5,7 @@
 #ifndef GLADOS_MUTEX_H
 #define GLADOS_MUTEX_H
 
-#include "stddef.h"
+#include "glados/stddef.h"
 
 typedef struct wait_queue_node {
   struct thread* thread;                  // Pointer to the waiting thread

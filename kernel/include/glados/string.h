@@ -5,7 +5,7 @@
 #ifndef GLADOS_STRING_H
 #define GLADOS_STRING_H
 
-#include "stddef.h"
+#include "glados/stddef.h"
 
 #define OCTAL 0x08
 #define DECIMAL 0x0A

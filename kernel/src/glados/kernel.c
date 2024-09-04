@@ -117,7 +117,7 @@ extern uint32_t multiboot_info_addr_;
 
 void kmain(uintptr_t image_end) {
   multiboot_info = parse_multiboot_info(multiboot_info_addr_);
-  gdt_init();
+  init_gdt();
   paging_init((image_end + 0xFFF) & ~0xFFF); // Aligns the image end address to 0x1000
   kmalloc_init();
   graphics_init();

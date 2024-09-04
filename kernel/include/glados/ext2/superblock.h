@@ -5,40 +5,45 @@
 #ifndef GLADOS_SUPERBLOCK_H
 #define GLADOS_SUPERBLOCK_H
 
-#include "stdint.h"
+#include "glados/stddef.h"
 
-typedef enum ext2_fs_state : uint16_t {
+enum ext2_fs_state {
   EXT2_FS_STATE_CLEAN      = 1,
   EXT2_FS_STATE_HAS_ERRORS = 2
-} ext2_fs_state_t;
+};
+typedef uint16_t ext2_fs_state_t;
 
-typedef enum ext2_error_handling : uint16_t {
+enum ext2_error_handling {
   EXT2_ERROR_HANDLING_IGNORE       = 1,
   EXT2_ERROR_HANDLING_REMOUNT_RO   = 2,
   EXT2_ERROR_HANDLING_KERNEL_PANIC = 3
-} ext2_error_handling_t;
+};
+typedef uint16_t ext2_error_handling_t;
 
-typedef enum ext2_optional_feature : uint32_t {
+enum ext2_optional_feature {
   EXT2_OPTIONAL_FEATURE_PREALLOCATE         = 0x0001,
   EXT2_OPTIONAL_FEATURE_HAS_AFS_INODES      = 0x0002,
   EXT2_OPTIONAL_FEATURE_HAS_JOURNAL         = 0x0004,
   EXT2_OPTIONAL_FEATURE_EXTENDED_INODE_ATTR = 0x0008,
   EXT2_OPTIONAL_FEATURE_FS_RESIZE           = 0x0010,
   EXT2_OPTIONAL_FEATURE_DIR_USE_HASH_INDEX  = 0x0020,
-} ext2_optional_feature_t;
+};
+typedef uint32_t ext2_optional_feature_t;
 
-typedef enum ext2_required_feature : uint32_t {
+enum ext2_required_feature {
   EXT2_REQUIRED_FEATURE_HAS_COMPRESSION         = 0x0001,
   EXT2_REQUIRED_FEATURE_DIR_HAS_TYPE            = 0x0002,
   EXT2_REQUIRED_FEATURE_JOURNAL_REPLAY_REQUIRED = 0x0004,
   EXT2_REQUIRED_FEATURE_USES_JOURNAL_DEVICE     = 0x0008
-} ext2_required_feature_t;
+};
+typedef uint32_t ext2_required_feature_t;
 
-typedef enum ext2_readonly_feature : uint32_t {
+enum ext2_readonly_feature {
   EXT2_READONLY_FEATURE_SPARSE_SB_AND_GDT    = 0x0001, // sparse superblocks and group descriptor tables
   EXT2_READONLY_FEATURE_64_BIT_FS            = 0x0002,
   EXT2_READONLY_FEATURE_DIRS_USE_BINARY_TREE = 0x0004
-} ext2_readonly_feature_t;
+};
+typedef uint32_t ext2_readonly_feature_t;
 
 // each block should be 1024 bytes in length
 // todo check size

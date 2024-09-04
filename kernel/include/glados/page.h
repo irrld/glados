@@ -5,7 +5,7 @@
 #ifndef GLADOS_PAGE_H
 #define GLADOS_PAGE_H
 
-#include "stddef.h"
+#include "glados/stddef.h"
 
 #define PAGE_PRESENT    0x01
 #define PAGE_RW         0x02

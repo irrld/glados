@@ -105,7 +105,7 @@ void set_rtc_rate(int rate) {
   port_byte_out(CMOS_DATA, (prev & 0xF0) | rate); // Set new rate
 }
 
-void time_init() {
+void init_time() {
   kprintf("Initializing time\n");
   disable_nmi();
 

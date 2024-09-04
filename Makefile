@@ -54,7 +54,7 @@ build-image: all linked.elf
 	sudo mount /dev/loop0p2 /mnt
 # Copy the kernel and other files
 	sudo mkdir -p /mnt/boot/grub
-	sudo cp linked.s /mnt/boot/linked.s
+	sudo date | tee build/info.txt
 	sudo cp build/linked.elf /mnt/boot/linked.elf
 	sudo umount /mnt
 
