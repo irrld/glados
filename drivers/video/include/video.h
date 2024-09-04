@@ -5,7 +5,7 @@
 #ifndef GLADOS_VIDEO_H
 #define GLADOS_VIDEO_H
 
-#include "stddef.h"
+#include "../../../kernel/include/glados/stddef.h"
 
 #define VIDEO_ADDRESS 0xb8000
 #define MAX_ROWS 25

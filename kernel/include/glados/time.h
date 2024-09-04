@@ -1,5 +1,5 @@
 //
-// Created by root on 8/19/24.
+// Created by irrl on 8/19/24.
 //
 
 #ifndef GLADOS_TIME_H

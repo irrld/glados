@@ -1,12 +1,11 @@
 //
-// Created by root on 8/28/24.
+// Created by irrl on 8/28/24.
 //
 
-#include "page.h"
-#include "kernel.h"
-#include "stddef.h"
-#include "string.h"
+#include "glados/page.h"
 #include "video.h"
+#include "glados/kernel.h"
+#include "glados/string.h"
 
 typedef struct pgd_entry {
   uint8_t present : 1;

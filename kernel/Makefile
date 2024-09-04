@@ -10,10 +10,10 @@ all : kernel.elf
 kernel.elf: $(BUILD_DIR)/kernel.c.o $(BUILD_DIR)/string.c.o $(BUILD_DIR)/kernel.asm.o $(BUILD_DIR)/time.c.o $(BUILD_DIR)/thread.c.o $(BUILD_DIR)/page.c.o $(BUILD_DIR)/mutex.c.o $(BUILD_DIR)/kmalloc.c.o
 	ld -i -o elf64 $^ -o $(BUILD_DIR)/kernel.elf
 
-$(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/%.c.o: $(SRC_DIR)/glados/%.c
 	@mkdir -p $(dir $@)
 	gcc $(CFLAGS) -c $< $(addprefix -I, ${INCLUDE_DIRS}) -o $(BUILD_DIR)/$@
 
-$(BUILD_DIR)/%.asm.o: $(SRC_DIR)/%.asm
+$(BUILD_DIR)/%.asm.o: $(SRC_DIR)/glados/%.asm
 	@mkdir -p $(dir $@)
 	nasm -gdwarf -f elf64 $< -o $(BUILD_DIR)/$@

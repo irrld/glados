@@ -1,10 +1,10 @@
 //
-// Created by root on 9/1/24.
+// Created by irrl on 9/1/24.
 //
 
-#include "mutex.h"
-#include "kmalloc.h"
-#include "thread.h"
+#include "glados/mutex.h"
+#include "glados/kmalloc.h"
+#include "glados/thread.h"
 
 bool mutex_enabled_ = false;
 

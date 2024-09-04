@@ -1,14 +1,13 @@
 
-#include "kernel.h"
+#include "glados/kernel.h"
 #include "keyboard.h"
-#include "kmalloc.h"
-#include "mutex.h"
-#include "page.h"
-#include "shell.h"
-#include "string.h"
-#include "thread.h"
 #include "video.h"
-#include "time.h"
+#include "glados/kmalloc.h"
+#include "glados/mutex.h"
+#include "glados/page.h"
+#include "glados/string.h"
+#include "glados/thread.h"
+#include "glados/time.h"
 
 extern void load_gdt();
 extern void load_idt();

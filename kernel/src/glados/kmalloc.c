@@ -1,9 +1,9 @@
 //
-// Created by root on 8/27/24.
+// Created by irrl on 8/27/24.
 //
 
-#include "kmalloc.h"
-#include "page.h"
+#include "glados/kmalloc.h"
+#include "glados/page.h"
 
 /*
 typedef struct heap_block_bm {

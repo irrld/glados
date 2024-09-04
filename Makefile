@@ -1,6 +1,5 @@
 BUILD_DIR := build
-# Shell is going to be an external application when we have a file system.
-KERNEL_EXT := $(BUILD_DIR)/video.o $(BUILD_DIR)/keyboard.o $(BUILD_DIR)/shell.o
+KERNEL_EXT := $(BUILD_DIR)/video.o $(BUILD_DIR)/keyboard.o
 BOOTLOADER := $(BUILD_DIR)/bootloader.elf
 KERNEL := $(BUILD_DIR)/kernel.elf
 
@@ -8,7 +7,6 @@ all: clean
 	+$(MAKE) -C bootloader
 	+$(MAKE) -C drivers
 	+$(MAKE) -C kernel
-	+$(MAKE) -C shell
 
 clean:
 	rm -rf build
@@ -27,7 +25,14 @@ linked.bin: linked.elf
 	objcopy -O binary $(BUILD_DIR)/linked.elf $(BUILD_DIR)/linked.bin
 
 build-image: all linked.bin
-	qemu-img create build/system.img 1G
+	qemu-img create -f raw build/system.img 1G
 	dd if=/dev/zero of=build/system.img bs=1M count=512
 	dd if=build/linked.bin of=build/system.img bs=512 seek=0 conv=notrunc
+	echo ",,83" | sudo sfdisk build/system.img --append
+	sudo losetup -fP build/system.img
+	sudo mke2fs -t ext2 /dev/loop0p1
+	sudo mount /dev/loop0p1 /mnt
+	cp linked.s /mnt/linked.s
+	sudo umount /mnt
+	sudo losetup -d /dev/loop0
 

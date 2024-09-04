@@ -2,10 +2,9 @@
 // Created by irrl on 8/26/24.
 //
 
-#include "thread.h"
-#include "kmalloc.h"
-#include "string.h"
-
+#include "glados/thread.h"
+#include "glados/kmalloc.h"
+#include "glados/string.h"
 
 typedef struct entry {
   thread_t* thread;

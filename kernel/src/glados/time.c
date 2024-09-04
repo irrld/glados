@@ -2,8 +2,8 @@
 // Created by irrl on 8/19/24.
 //
 
-#include "time.h"
-#include "kernel.h"
+#include "glados/time.h"
+#include "glados/kernel.h"
 
 uint8_t read_rtc_register(unsigned char reg) {
   port_byte_out(CMOS_ADDRESS, reg);
@@ -22,6 +22,7 @@ uint8_t read_rtc_register_safe(unsigned char reg) {
 }
 
 bool is_binary_;
+
 bool is_binary() {
   return read_rtc_register_safe(0x0B) & 0x04;
 }

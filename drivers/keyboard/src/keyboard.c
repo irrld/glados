@@ -3,8 +3,8 @@
 //
 
 #include "keyboard.h"
-#include "kernel.h"
-#include "string.h"
+#include "../../../kernel/include/glados/kernel.h"
+#include "../../../kernel/include/glados/string.h"
 
 const char keymap_[128] = {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8', /* 0x00 - 0x09 */
@@ -42,7 +42,7 @@ bool alt_pressed_ = false;
 
 void keyboard_isr() {
   uint8_t scancode = port_byte_in(KEYBOARD_DATA_PORT);
-  bool is_press = !(scancode & 0b10000000);
+  /*bool is_press = !(scancode & 0b10000000);
   scancode &= ~0b10000000;
   if (scancode == KEYBOARD_KEY_LEFT_SHIFT || scancode == KEYBOARD_KEY_RIGHT_SHIFT) {
     shift_pressed_ = is_press;
@@ -63,7 +63,7 @@ void keyboard_isr() {
   } else {
     key = keymap_[scancode];
   }
-  callback_(scancode, key, is_press);
+  callback_(scancode, key, is_press);*/
 }
 
 void driver_init_keyboard(keyboard_type_t handler) {

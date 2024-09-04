@@ -1,7 +1,7 @@
 #include "video.h"
-#include "kernel.h"
-#include "string.h"
-#include "mutex.h"
+#include "../../../kernel/include/glados/kernel.h"
+#include "../../../kernel/include/glados/mutex.h"
+#include "../../../kernel/include/glados/string.h"
 
 struct video_data {
   char character;
