@@ -151,12 +151,12 @@ void map_page(uintptr_t virtual_addr, uintptr_t physical_addr, uint64_t flags) {
     pt = (uint64_t*)(pdt[pdt_index] & PAGE_MASK);
   }
 
-  if (pt[pt_index] & PAGE_PRESENT) {
+  /*if (pt[pt_index] & PAGE_PRESENT) {
     uint64_t previous_address = pt[pt_index] & PAGE_MASK;
     if (previous_address != physical_addr) {
       kernel_panic("Tried to map page that already exists!");
     }
-  }
+  }*/
 
   // Set the physical address in the page table
   pt[pt_index] = (physical_addr & PAGE_MASK) | flags | PAGE_PRESENT;
@@ -215,13 +215,11 @@ void identity_map(uintptr_t start_addr, uint64_t size) {
 }
 
 void paging_init(uintptr_t start_addr) {
-  kprintf("Initializing paging\n");
-  kprintf("Paging will start from 0x%x\n", start_addr);
   pml4 = (uint64_t*) read_cr3();
   first_free_page_ = start_addr;
   next_free_page_ = start_addr;
   last_free_page_ = start_addr + PHYS_MEM_SIZE;
-  // Before 0x200000 was identity mapped by the bootloader itself.
+  // Before 0x100000+0x200000 was identity mapped by the bootloader itself.
   identity_map(0x200000, PHYS_MEM_SIZE);
 }
 

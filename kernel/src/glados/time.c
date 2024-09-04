@@ -120,6 +120,7 @@ void time_init() {
 
   enable_nmi();
   kprintf("Time: %llu\n", unix_time);
+  register_irh(INTERRUPT_RTC, handle_rtc);
 }
 
 void synchronize_time() {
@@ -132,7 +133,6 @@ void synchronize_time() {
 }
 
 uint16_t divisor_ = 0;
-
 // todo maybe use more accurate timers instead of RTC
 void handle_rtc() {
   read_rtc_register(0x0C);

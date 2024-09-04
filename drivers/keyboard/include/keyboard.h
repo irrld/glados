@@ -5,7 +5,7 @@
 #ifndef GLADOS_KEYBOARD_H
 #define GLADOS_KEYBOARD_H
 
-#include "../../../kernel/include/glados/stddef.h"
+#include "glados/stddef.h"
 
 #define KEYBOARD_DATA_PORT 0x60
 #define KEYBOARD_STATUS_PORT 0x64
@@ -18,7 +18,7 @@
 
 typedef void (*keyboard_type_t)(uint8_t scancode, char key, bool is_press);
 
-void driver_init_keyboard(keyboard_type_t handler);
+void driver_init_keyboard();
 
 bool is_shift();
 bool is_alt();

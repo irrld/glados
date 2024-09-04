@@ -1,9 +1,13 @@
+section .text
+    align 16
+
 extern idtp_
 extern gdtp_
 extern tss_
 extern isr_cpu_state_
 
 extern send_eoi
+extern irh_common
 
 global load_idt
 load_idt:
@@ -27,10 +31,12 @@ load_tss:
     ret
 
 
-%macro ISR_STUB_COMMON 1-2
-extern irh_%1
-global isr_%1
-isr_%1:
+%macro ISR_STUB_COMMON 2-3
+%if %1 > 0
+    extern irh_%2
+%endif
+global isr_%2
+isr_%2:
     push rax
     push rbx
     push rcx
@@ -47,9 +53,13 @@ isr_%1:
     push r14
     push r15
 
-    mov rdi, %1  ; interrupt number is passed to the first parameter of the isr_common_stub function
-    call irh_%1
-    %if %0 > 1 ; For software interrupts, we dont have to do this
+    %if %0 > 1
+        mov rdi, %1
+        call irh_common
+    %else
+        call irh_%1
+    %endif
+    %if %0 > 2 ; For software interrupts, we dont have to do this
         mov rdi, %2
         call send_eoi
     %endif
@@ -74,10 +84,12 @@ isr_%1:
 %endmacro
 
 ; ISR stub that saves the cpu state to a variable instead of the stack
-%macro ISR_STUB_SWITCHING 1-2
-extern irh_%1
-global isr_%1
-isr_%1:
+%macro ISR_STUB_SWITCHING 2-3
+%if %1 > 0
+    extern irh_%2
+%endif
+global isr_%2
+isr_%2:
 ; Save cpu state
     push rdi
 
@@ -117,10 +129,14 @@ isr_%1:
 
     mov rbp, rsp
 
-    mov rdi, %1  ; interrupt number is passed to the first parameter of the isr_common_stub function
-    call irh_%1
-    %if %0 > 1 ; For software interrupts, we dont have to do this
-        mov rdi, %2
+    %if %1 == 0
+        mov di, %1
+        call irh_common
+    %else
+        call irh_%1
+    %endif
+    %if %0 > 2 ; For software interrupts, we dont have to do this
+        mov di, %2
         call send_eoi
     %endif
 
@@ -161,11 +177,11 @@ isr_%1:
     iretq
 %endmacro
 
-ISR_STUB_SWITCHING 13
-ISR_STUB_SWITCHING 14
-ISR_STUB_SWITCHING 32, 0
-ISR_STUB_COMMON 33, 1
-ISR_STUB_COMMON 40, 8
+ISR_STUB_SWITCHING 0, 13
+ISR_STUB_SWITCHING 0, 14
+ISR_STUB_SWITCHING 0, 32, 0
+ISR_STUB_COMMON 1, 33, 1
+ISR_STUB_COMMON 1, 40, 8
 
 global save_cpu_state
 save_cpu_state:

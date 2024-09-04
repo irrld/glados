@@ -1,56 +1,14 @@
-
-section .stage2
-    [bits 16]
-
-    mov bx, stage2_msg
-    call print_string
-
-    mov ax, 0x0000     ; Set up segment register
-    mov es, ax
-    mov di, mmap_entries_     ; Point di to the start of the reserved buffer
-    call do_e820       ; Call the function
-    mov [mmap_entry_count_], bp
-
-    ;; Load GDT and switch to protected mode
-
-    cli                     ; Can't have interrupts during the switch
-    lgdt [gdt32_pseudo_descriptor]
-
-    ;; Setting cr0.PE (bit 0) enables protected mode
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
-
-    ;; The far jump into the code segment from the new GDT flushes
-    ;; the CPU pipeline removing any 16-bit decoded instructions
-    ;; and updates the cs register with the new code segment.
-    jmp CODE_SEG32:start_prot_mode
-
-%include "include/print.asm"
-%include "include/memory_map.asm"
-
 section .bss
-global mmap_entries_
-mmap_entries_:
-     resb 1024 // 24 * 42
-
-global mmap_entry_count_
-mmap_entry_count_:
+global multiboot_info_addr_
+multiboot_info_addr_:
      resb 4
 
-section .stage2
-
+section .text
     [bits 32]
 
-start_prot_mode:
-    ;; Old segments are now meaningless
-    mov ax, DATA_SEG32
-    mov ds, ax
-    mov ss, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-
+global _start
+_start:
+    mov [multiboot_info_addr_], ebx
     mov ebx, prot_mode_msg
     call print_string32
 
@@ -80,6 +38,13 @@ start_prot_mode:
     ;; New GDT has the 64-bit segment flag set. This makes the CPU switch from
     ;; IA-32e compatibility mode to 64-bit mode.
     lgdt [gdt64_pseudo_descriptor]
+
+    mov ax, DATA_SEG64
+    mov ds, ax
+    mov ss, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
 
     jmp CODE_SEG64:start_long_mode
 
@@ -147,8 +112,8 @@ start_long_mode:
     extern __image_end
     mov rdi, __image_end
 
-    extern start_kernel
-    call start_kernel
+    extern kmain
+    call kmain
 
 end64:
     hlt
@@ -156,7 +121,6 @@ end64:
 
 %include "include/print64.asm"
 
-%include "include/gdt32.asm"
 %include "include/gdt64.asm"
 
 stage2_msg: db "Disk load successful", 13, 10, 0

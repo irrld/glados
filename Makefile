@@ -1,7 +1,7 @@
 BUILD_DIR := build
-KERNEL_EXT := $(BUILD_DIR)/video.o $(BUILD_DIR)/keyboard.o
-BOOTLOADER := $(BUILD_DIR)/bootloader.elf
+KERNEL_EXT := $(BUILD_DIR)/video.elf $(BUILD_DIR)/keyboard.o
 KERNEL := $(BUILD_DIR)/kernel.elf
+BOOTLOADER := $(BUILD_DIR)/bootloader.elf
 
 all: clean
 	+$(MAKE) -C bootloader
@@ -19,20 +19,44 @@ debug: build-image
 	qemu-system-x86_64 -s -S -drive format=raw,file=build/image.img
 
 linked.elf:
-	ld -T linker.ld -o elf64 $(BOOTLOADER) $(KERNEL) $(KERNEL_EXT) -o $(BUILD_DIR)/linked.elf
+	ld --nmagic -T linker.ld -o elf64 $(BOOTLOADER) $(KERNEL) $(KERNEL_EXT) -o $(BUILD_DIR)/linked.elf
 
-linked.bin: linked.elf
-	objcopy -O binary $(BUILD_DIR)/linked.elf $(BUILD_DIR)/linked.bin
+#linked.bin: linked.elf
+#	objcopy -O binary $(BUILD_DIR)/linked.elf $(BUILD_DIR)/linked.bin
 
-build-image: all linked.bin
-	qemu-img create -f raw build/system.img 1G
-	dd if=/dev/zero of=build/system.img bs=1M count=512
-	dd if=build/linked.bin of=build/system.img bs=512 seek=0 conv=notrunc
-	echo ",,83" | sudo sfdisk build/system.img --append
-	sudo losetup -fP build/system.img
-	sudo mke2fs -t ext2 /dev/loop0p1
+build-image: all linked.elf
+# Create a disk image
+	qemu-img create -f raw build/disk.img 1G
+
+# Create a GPT partition table
+	sudo parted build/disk.img mklabel gpt
+
+# Create a primary EFI System partition of type EFI System (use FAT32)
+	sudo parted build/disk.img mkpart EFI fat32 1MiB 512MiB
+	sudo parted build/disk.img mkpart primary ext2 512MiB 100%
+
+# Set up a loop device
+	sudo losetup -fP build/disk.img
+	sleep 1
+
+# Format the partition 1 as FAT32
+	sudo mkfs.fat -F32 /dev/loop0p1
+# Format the partition 2 as EXT2
+	sudo mkfs.ext2 /dev/loop0p2
+
+# Mount the EFI partition and install grub
 	sudo mount /dev/loop0p1 /mnt
-	cp linked.s /mnt/linked.s
+	sudo grub-install --target=x86_64-efi --efi-directory=/mnt --boot-directory=/mnt/boot --removable
+	sudo cp grub/grub.cfg /mnt/boot/grub/grub.cfg
 	sudo umount /mnt
-	sudo losetup -d /dev/loop0
 
+# Mount the Ext2 partition
+	sudo mount /dev/loop0p2 /mnt
+# Copy the kernel and other files
+	sudo mkdir -p /mnt/boot/grub
+	sudo cp linked.s /mnt/boot/linked.s
+	sudo cp build/linked.elf /mnt/boot/linked.elf
+	sudo umount /mnt
+
+# Detach the file
+	sudo losetup -d /dev/loop0

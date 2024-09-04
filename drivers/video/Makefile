@@ -4,7 +4,8 @@ CFLAGS :=-Wall -Wextra -Wpedantic -m64 -O0 -std=c17 -finline-functions -fno-stac
 
 BUILD_DIR := ../../build
 
-all: $(BUILD_DIR)/video.o
+all: $(BUILD_DIR)/video.o $(BUILD_DIR)/fbterm.o
+	ld -r -o elf64 $^ -o $(BUILD_DIR)/video.elf
 
 $(BUILD_DIR)/%.o : src/%.c
 	mkdir -p $(BUILD_DIR)

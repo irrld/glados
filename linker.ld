@@ -1,32 +1,23 @@
-# linker.ld
-
-MEMORY
-{
-    boot_sector (rwx) : ORIGIN = 0x7c00, LENGTH = 512
-    stage2 (rwx) : ORIGIN = 0x7e00, LENGTH = 0x1000
-    kernel (rwx) : ORIGIN = 0x8e00, LENGTH = 0x16000
-}
-
-ENTRY(__start)
+ENTRY(_start)
 SECTIONS
 {
-    .boot_sector : { *(.boot_sector); } > boot_sector
-    .bootsign (0x7c00 + 510) :
+  . = 1M;
+    /* Place Multiboot header at the very beginning of the kernel */
+    .boot :
     {
-        BYTE(0x55)
-        BYTE(0xaa)
-    } > boot_sector
-    .stage2 : { *(.stage2); } > stage2
+        *(.multiboot_header) /* Ensures that this section is not discarded */
+    }
 
-    .text : { *(.text); } > kernel
-    .data : { *(.data); } > kernel
-    .rodata : { *(.rodata); } > kernel
+    .text : { *(.text); }
+    .rodata : { *(.rodata); }
+
+    .data : { *(.data); }
 
     .bss :
     {
         *(.bss)
         *(COMMON)
-    } > kernel
+    }
 
     .stack (NOLOAD) :
     {
@@ -34,8 +25,8 @@ SECTIONS
         __stack_start = .;
         . = . + 0x8000;  /* Reserve 32KB for stack */
         __stack_end = .;
-    } > kernel
+    }
     __image_end = .;
 
-    /DISCARD/ : { *(.comment) }
+    /DISCARD/ : { *(.comment) *(.eh_frame) *(.eh_frame_hdr) }
 }

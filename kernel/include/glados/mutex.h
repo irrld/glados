@@ -23,9 +23,6 @@ typedef struct mutex {
   wait_queue_t waiters;  // Queue of threads waiting for the lock
 } mutex_t;
 
-void mutex_init();
-void mutex_deinit();
-
 void mutex_lock(mutex_t* mutex);
 void mutex_unlock(mutex_t* mutex);
 

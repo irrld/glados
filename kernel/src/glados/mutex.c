@@ -6,16 +6,6 @@
 #include "glados/kmalloc.h"
 #include "glados/thread.h"
 
-bool mutex_enabled_ = false;
-
-void mutex_init() {
-  mutex_enabled_ = true;
-}
-
-void mutex_deinit() {
-  mutex_enabled_ = false;
-}
-
 void wait_queue_init(wait_queue_t* queue) {
   queue->head = NULL;
   queue->tail = NULL;
@@ -56,9 +46,6 @@ bool wait_queue_is_empty(wait_queue_t* queue) {
 }
 
 void mutex_lock(mutex_t* mutex) {
-  if (!mutex_enabled_) {
-    return;
-  }
   disable_interrupts();
   if (mutex->locked) {
     if (mutex->owner == current_thread()) {
@@ -77,9 +64,6 @@ finish:
 }
 
 void mutex_unlock(mutex_t* mutex) {
-  if (!mutex_enabled_) {
-    return;
-  }
   disable_interrupts();
   if (mutex->owner != current_thread()) {
     goto finish;

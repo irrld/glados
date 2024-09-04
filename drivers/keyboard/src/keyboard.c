@@ -3,8 +3,9 @@
 //
 
 #include "keyboard.h"
-#include "../../../kernel/include/glados/kernel.h"
-#include "../../../kernel/include/glados/string.h"
+#include "glados/kernel.h"
+#include "glados/string.h"
+#include "glados/stdio.h"
 
 const char keymap_[128] = {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8', /* 0x00 - 0x09 */
@@ -34,14 +35,13 @@ const char shift_keymap_[128] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0  /* 0x65 - 0x6F */
 };
 
-
-keyboard_type_t callback_;
 bool shift_pressed_ = false;
 bool ctrl_pressed_ = false;
 bool alt_pressed_ = false;
 
-void keyboard_isr() {
+void irh_keyboard(uint16_t irq) {
   uint8_t scancode = port_byte_in(KEYBOARD_DATA_PORT);
+  kprintf("Key 0x%x", scancode);
   /*bool is_press = !(scancode & 0b10000000);
   scancode &= ~0b10000000;
   if (scancode == KEYBOARD_KEY_LEFT_SHIFT || scancode == KEYBOARD_KEY_RIGHT_SHIFT) {
@@ -66,8 +66,8 @@ void keyboard_isr() {
   callback_(scancode, key, is_press);*/
 }
 
-void driver_init_keyboard(keyboard_type_t handler) {
-  callback_ = handler;
+void driver_init_keyboard() {
+  register_irh(INTERRUPT_KEYBOARD, irh_keyboard);
 }
 
 bool is_shift() {
@@ -77,6 +77,7 @@ bool is_shift() {
 bool is_alt() {
   return alt_pressed_;
 }
+
 bool is_ctrl() {
   return ctrl_pressed_;
 }

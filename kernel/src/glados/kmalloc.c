@@ -30,11 +30,10 @@ void extend_heap() {
 }
 
 void kmalloc_init() {
-  kprintf("Initializing malloc\n", heap_start_);
-  heap_start_ = 0x10000000;
+  heap_start_ = 0x10100000;
   heap_end_ = heap_start_;
   extend_heap();
-  kprintf("Heap will start from: 0x%llx\n", heap_start_);
+  //kprintf("Heap will start from: 0x%llx\n", heap_start_);
 }
 
 void* kmalloc(size_t size) {
