@@ -4,6 +4,7 @@
 #define CHARACTER_SIZE 8
 #define LINE_SPACING 2
 #define ASCII_OFFSET 32
+#define CHARACTER_MAX 126
 
 static uint32_t term_width_;
 static uint32_t term_height_;
@@ -260,7 +261,7 @@ void fbterm_clear_console() {
 }
 
 void fbterm_putc(const char c) {
-  if (c == 0 || !init_) {
+  if (c == 0 || c >= CHARACTER_MAX || !init_) {
     return;
   }
   if (c == '\n') {

@@ -2,3 +2,9 @@
 # QEMU BOOT
 qemu-system-x86_64 -m 2G -bios OVMF.fd -drive file=disk.img,format=raw,if=virtio -s -S -d int,cpu_reset,in_asm -D qemu.log
 
+qemu-system-x86_64 -m 2G -bios OVMF.fd \
+    -drive file=disk.img,format=raw,if=none,id=disk1 \
+    -device ich9-ahci,id=ahci \
+    -device ide-hd,drive=disk1,bus=ahci.0 \
+    -s -S -d int,cpu_reset,in_asm -D qemu.log
+

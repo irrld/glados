@@ -74,8 +74,9 @@ typedef struct pt_entry {
 } pt_entry_t;
 
 
-#define PHYS_MEM_SIZE  0x200000
-#define EXTRA_SPACE 0x16000 // 16 pages
+#define INITIAL_PAGES 0x200
+#define EXTRA_SPACE_PAGES 0x16
+#define EXTRA_SPACE EXTRA_SPACE_PAGES * PAGE_SIZE
 
 uintptr_t first_free_page_;
 uintptr_t next_free_page_;
@@ -88,7 +89,7 @@ uintptr_t alloc_page() {
   // Make sure we always have enough pages.
   if (!extend_lock_ && available_space < EXTRA_SPACE) {
     extend_lock_ = true;
-    identity_map(last_free_page_, EXTRA_SPACE);
+    identity_map(last_free_page_, EXTRA_SPACE_PAGES);
     last_free_page_ += EXTRA_SPACE;
     extend_lock_ = false;
   }
@@ -207,8 +208,8 @@ uintptr_t get_physical_address(uintptr_t virtual_addr) {
   return physical_addr;
 }
 
-void identity_map(uintptr_t start_addr, uint64_t size) {
-  uint64_t end_addr = start_addr + size;
+void identity_map(uintptr_t start_addr, uint16_t page_count) {
+  uint64_t end_addr = start_addr + (page_count * PAGE_SIZE);
   for (uint64_t addr = start_addr; addr < end_addr; addr += PAGE_SIZE) {
     map_page(addr, addr, PAGE_RW);
   }
@@ -218,8 +219,8 @@ void paging_init(uintptr_t start_addr) {
   pml4 = (uint64_t*) read_cr3();
   first_free_page_ = start_addr;
   next_free_page_ = start_addr;
-  last_free_page_ = start_addr + PHYS_MEM_SIZE;
-  // Before 0x100000+0x200000 was identity mapped by the bootloader itself.
-  identity_map(0x200000, PHYS_MEM_SIZE);
+  last_free_page_ = start_addr + (INITIAL_PAGES * PAGE_SIZE);
+  // Before 0x200000 was identity mapped by the bootloader itself.
+  identity_map(0x200000, INITIAL_PAGES);
 }
 

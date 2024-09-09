@@ -28,3 +28,17 @@ unsigned short port_word_in(unsigned short port) {
 void port_word_out(unsigned short port, unsigned short data) {
   __asm__("out %%ax, %%dx" : :"a" (data), "d" (port));
 }
+
+unsigned int port_dword_in(unsigned short port) {
+  unsigned int result;
+  // "=a" (result) means: put EAX register in variable RESULT when finished
+  // "d" (port) means: load EDX with port
+  __asm__("in %%dx, %%eax" : "=a" (result) : "d" (port));
+  return result;
+}
+
+void port_dword_out(unsigned short port, unsigned int data) {
+  // "a" (data) means: load EAX with data
+  // "d" (port) means: load EDX with port
+  __asm__("out %%eax, %%dx" : : "a" (data), "d" (port));
+}

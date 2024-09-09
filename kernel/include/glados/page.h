@@ -20,7 +20,7 @@ void map_page(uintptr_t virtual_addr, uintptr_t physical_addr, uint64_t flags);
 
 uintptr_t get_physical_address(uintptr_t virtual_addr);
 
-void identity_map(uintptr_t start_addr, uint64_t size);
+void identity_map(uintptr_t start_addr, uint16_t page_count);
 
 void paging_init(uintptr_t start_addr);
 

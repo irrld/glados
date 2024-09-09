@@ -1,20 +1,27 @@
 
 #include "glados/kernel.h"
-#include "keyboard.h"
-#include "video.h"
+#include "glados/ahci.h"
+#include "glados/pci.h"
 #include "fbterm.h"
+#include "glados/fs/ext2.h"
+#include "glados/idt.h"
 #include "glados/kmalloc.h"
+#include "glados/multiboot2.h"
 #include "glados/mutex.h"
 #include "glados/page.h"
+#include "glados/pic.h"
+#include "glados/gdt.h"
+#include "glados/pit.h"
+#include "glados/tss.h"
 #include "glados/string.h"
 #include "glados/thread.h"
 #include "glados/time.h"
-#include "glados/idt.h"
-#include "glados/pit.h"
-#include "glados/pic.h"
-#include "glados/multiboot2.h"
+#include "keyboard.h"
+#include "video.h"
 
 cpu_state_t isr_cpu_state_; // Saved cpu state for ISR to load back
+irh_t interrupt_handlers[IDT_ENTRIES];
+extern uint32_t multiboot_info_addr_;
 
 // todo handle nmi's
 // todo apic
@@ -38,8 +45,6 @@ void kernel_panic(const char* str) {
 cpu_state_t* get_saved_cpu_state() {
   return &isr_cpu_state_;
 }
-
-irh_t interrupt_handlers[IDT_ENTRIES];
 
 void irh_common(uint16_t irq) {
   if (interrupt_handlers[irq]) {
@@ -78,23 +83,6 @@ void register_irh(uint16_t irq, irh_t fn) {
   interrupt_handlers[irq] = fn;
 }
 
-static mutex_t mutex_;
-void thread_a() {
-  while (true) {
-    /*mutex_lock(&mutex_);
-    kprintf("A\n");
-    mutex_unlock(&mutex_);*/
-  }
-}
-
-void thread_b() {
-  while (true) {
-    /*mutex_lock(&mutex_);
-    kprintf("B\n");
-    mutex_unlock(&mutex_);*/
-  }
-}
-
 multiboot_parsed_data_t multiboot_info;
 
 void graphics_init() {
@@ -113,7 +101,18 @@ void graphics_init() {
   init_fbterm(width, height);
 }
 
-extern uint32_t multiboot_info_addr_;
+
+void kthread() {
+  while (true) {
+    // todo kernel task queue
+    halt();
+  }
+}
+
+void init_fs() {
+  // filesystem registering and abstract interface for accessing filesystems
+  init_ext2();
+}
 
 void kmain(uintptr_t image_end) {
   multiboot_info = parse_multiboot_info(multiboot_info_addr_);
@@ -128,12 +127,14 @@ void kmain(uintptr_t image_end) {
   init_pit(100); // 10ms
   init_pic();
   init_tss();
+  init_pci();
+  init_ahci();
+  init_fs();
 
   driver_init_keyboard();
 
-  kprintf("Creating threads\n");
-  create_thread(thread_a);
-  create_thread(thread_b);
+  kprintf("Creating kernel thread\n");
+  create_thread(kthread);
 
   kprintf("Enabling interrupts!\n");
   enable_interrupts();
