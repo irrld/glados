@@ -24,7 +24,6 @@
 #define ATA_CMD_IDENTIFY_PACKET   0xA1
 #define ATA_CMD_IDENTIFY          0xEC
 
-#define AHCI_BASE       0x400000     // 4M
 #define HBA_PxCMD_ST    0x0001
 #define HBA_PxCMD_FRE   0x0010
 #define HBA_PxCMD_FR    0x4000
@@ -282,5 +281,11 @@ typedef struct hba_cmd_table {
 } hba_cmd_table_t;
 
 void init_ahci();
+
+// Public API for filesystem drivers
+int ahci_get_device_count();
+bool ahci_read_sectors(int device_id, uint64_t start_sector, uint16_t sector_count, void* buffer);
+bool ahci_write_sectors(int device_id, uint64_t start_sector, uint16_t sector_count, void* buffer);
+uint64_t ahci_get_sector_count(int device_id);
 
 #endif  //GLADOS_ATA_H
