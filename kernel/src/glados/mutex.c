@@ -4,7 +4,7 @@
 
 #include "glados/mutex.h"
 #include "glados/kmalloc.h"
-#include "glados/thread.h"
+#include "glados/kthread.h"
 
 void wait_queue_init(wait_queue_t* queue) {
   queue->head = NULL;

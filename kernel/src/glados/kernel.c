@@ -14,7 +14,7 @@
 #include "glados/pit.h"
 #include "glados/tss.h"
 #include "glados/string.h"
-#include "glados/thread.h"
+#include "glados/kthread.h"
 #include "glados/time.h"
 #include "keyboard.h"
 #include "video.h"

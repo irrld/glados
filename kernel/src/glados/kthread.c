@@ -2,19 +2,19 @@
 // Created by irrl on 8/26/24.
 //
 
-#include "glados/thread.h"
+#include "glados/kthread.h"
 #include "glados/kmalloc.h"
 #include "glados/string.h"
 
 typedef struct entry {
-  thread_t* thread;
+  kthread_t* thread;
   struct entry* previous;
   struct entry* next;
 } entry_t;
 
-uint64_t thread_counter_ = 0;
-thread_t* current_thread_ = NULL;
-entry_t* thread_head_ = NULL;
+uint64_t kthread_counter_ = 0;
+kthread_t* current_thread_ = NULL;
+entry_t* kthread_head_ = NULL;
 
 void* allocate_stack() {
   size_t stack_size = 0x800000;
@@ -32,11 +32,11 @@ void delete_stack(void* ptr) {
   kfree(ptr);
 }
 
-void on_thread_delete(thread_t* thread) {
+void on_kthread_delete(kthread_t* thread) {
   delete_stack(thread->stack_pointer);
 }
 
-void on_thread_create(thread_t* thread) {
+void on_kthread_create(kthread_t* thread) {
   thread->stack_pointer = allocate_stack();
   thread->sleeping = false;
   memset(&thread->state, NULL, sizeof(cpu_state_t));
@@ -48,37 +48,37 @@ void on_thread_create(thread_t* thread) {
   thread->state.ss = 0x10; // Stack segment selector for 64 bit
 }
 
-thread_t* create_thread(void (*entry_point)(void)) {
-  thread_t* thread = kmalloc(sizeof(thread_t));
+kthread_t* create_thread(void (*entry_point)(void)) {
+  kthread_t* thread = kmalloc(sizeof(kthread_t));
   if (!thread) {
     kernel_panic("Memory allocation error!");
   }
   thread->sleeping = false;
   thread->entry_point = entry_point;
-  thread->id = ++thread_counter_;
+  thread->id = ++kthread_counter_;
   entry_t* entry = kmalloc(sizeof(entry_t));
   entry->thread = thread;
-  entry->previous = thread_head_; // Head is the previous node now
+  entry->previous = kthread_head_; // Head is the previous node now
   entry->next = NULL;
-  thread_head_ = entry; // Set the head to the new entry
-  on_thread_create(thread);
+  kthread_head_ = entry; // Set the head to the new entry
+  on_kthread_create(thread);
   return thread;
 }
 
-void switch_to_thread(cpu_state_t* current, thread_t* thread) {
+void switch_to_thread(cpu_state_t* current, kthread_t* thread) {
   memcpy(current, &thread->state, sizeof(cpu_state_t));
-  current_thread_ = thread;
+  current_kthread_ = thread;
 }
 
-void force_switch_thread(thread_t* thread) {
-  current_thread_ = thread; // Update the current thread
+void force_switch_thread(kthread_t* thread) {
+  current_kthread_ = thread; // Update the current thread
   load_cpu_state(&thread->state); // Switch to thread
   // This function never returns, it will jump to the target
 }
 
 // If there are too many threads, this might fill the stack while finding the
-// requested thread. Might replace it later. Same applies to lookup_thread too
-void lookup_delete_thread(entry_t* node, uint64_t id) {
+// requested kthread. Might replace it later. Same applies to lookup_thread too
+void lookup_delete_kthread(entry_t* node, uint64_t id) {
   if (!node) {
     return;
   }
@@ -97,14 +97,14 @@ void lookup_delete_thread(entry_t* node, uint64_t id) {
     // Thread was found and deleted. We can leave now.
     return;
   }
-  lookup_delete_thread(node->previous, id);
+  lookup_delete_kthread(node->previous, id);
 }
 
 void delete_thread(uint64_t id) {
-  lookup_delete_thread(thread_head_, id);
+  lookup_delete_kthread(thread_head_, id);
 }
 
-thread_t* lookup_thread(entry_t* node, uint64_t id) {
+kthread_t* lookup_kthread(entry_t* node, uint64_t id) {
   if (!node) {
     return NULL;
   }
@@ -112,23 +112,23 @@ thread_t* lookup_thread(entry_t* node, uint64_t id) {
     // Thread is found, return it
     return node->thread;
   }
-  return lookup_thread(node->next, id);
+  return lookup_kthread(node->next, id);
 }
 
-thread_t* get_thread(uint64_t id) {
-  return lookup_thread(thread_head_, id);
+kthread_t* get_kthread(uint64_t id) {
+  return lookup_kthread(kthread_head_, id);
 }
 
-thread_t* current_thread() {
-  return current_thread_;
+kthread_t* current_kthread() {
+  return current_kthread_;
 }
 
-thread_t* lookup_thread_to_switch(entry_t* node) {
+kthread_t* lookup_kthread_to_switch(entry_t* node) {
   if (!node) {
     return NULL;
   }
   if (node->thread == current_thread_ || node->thread->sleeping) {
-    return lookup_thread_to_switch(node->previous);
+    return lookup_kthread_to_switch(node->previous);
   }
   return node->thread;
 }
@@ -145,7 +145,7 @@ void block_current_thread() {
   // Set IF to enable interrupts for next time
   current_thread_->state.rflags = current_thread_->state.rflags | 0x200;
   current_thread_->state.rip = (uint64_t) &&resume;
-   thread_t* thread = lookup_thread_to_switch(thread_head_);
+   kthread_t* thread = lookup_kthread_to_switch(thread_head_);
   if (thread) {
     force_switch_thread(thread);
   } else {
@@ -156,7 +156,7 @@ resume:
   return;
 }
 
-void wake_up_thread(thread_t* thread) {
+void wake_up_thread(kthread_t* thread) {
   thread->sleeping = false;
 }
 
@@ -166,7 +166,7 @@ void handle_threads() {
     kernel_panic("WTF!");
   }
   lock = true;
-  thread_t* thread = lookup_thread_to_switch(thread_head_);
+  kthread_t* thread = lookup_kthread_to_switch(thread_head_);
   if (thread) {
     cpu_state_t* saved_state = get_saved_cpu_state();
     switch_to_thread(saved_state, thread);
